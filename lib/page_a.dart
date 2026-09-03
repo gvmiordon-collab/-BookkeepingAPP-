@@ -1,6 +1,8 @@
+import 'package:bookkeeping/result_part.dart';
 import 'package:flutter/material.dart';
 import 'package:bookkeeping/calculator_numbers_buttons.dart';
 import 'package:bookkeeping/date_button.dart';
+
 
 class PageA extends StatefulWidget {
   const PageA({super.key});
@@ -10,6 +12,8 @@ class PageA extends StatefulWidget {
 }
 
 class _PageAState extends State<PageA> {
+
+  String userQuestions = '';
 
   final List<String> button =[
     '7', '8', '9', '÷', 'AC',
@@ -30,18 +34,25 @@ class _PageAState extends State<PageA> {
       body: Column(
         children: [
           Expanded(
-            flex: 3,
+            flex: 6,
             child: Container(
             ),
           ),
           Expanded(
-            flex: 1,
+            flex: 2,
             child: Container(
-              color: Colors.greenAccent[100],
+              decoration: BoxDecoration(
+                color: Colors.greenAccent,
+                border: Border.all(
+                  color: Colors.black,
+                  width: 2.0,
+                ),
+              ),
+              child: ResultPart(userQuestions: userQuestions),
             ),
           ),
           Expanded(
-            flex: 4,
+            flex: 9,
             child: Column(
               children: [
                 const DateButton(), // 修正：加上括號來實例化元件
@@ -51,11 +62,45 @@ class _PageAState extends State<PageA> {
                       shrinkWrap: true,
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 5),
                       itemBuilder: (BuildContext context, int index) {
-                        return CalculatorNumbersButtons(
-                          color: Colors.deepPurple,
-                          textColor: Colors.white,
-                          buttonText: button[index],
-                        );
+
+                        if(index ==4) { // Clean button (AC)
+                          return CalculatorNumbersButtons(
+                            buttomTopped: () {
+                              setState(() {
+                                userQuestions = '' ;
+                              });
+                            },
+                            color: Colors.green,
+                            textColor: Colors.white,
+                            buttonText: button[index],
+                          );
+
+                        } else if(index == 9) { // Delete button (<-)
+                          return CalculatorNumbersButtons(
+                            buttomTopped: () {
+                              setState(() {
+                                if (userQuestions.isNotEmpty) {
+                                  userQuestions = userQuestions.substring(0, userQuestions.length - 1);
+                                }
+                              });
+                            },
+                            color: Colors.red,
+                            textColor: Colors.white,
+                            buttonText: button[index],
+                          );
+                        }
+                        else{
+                          return CalculatorNumbersButtons(
+                            buttomTopped: () {
+                              setState(() {
+                                userQuestions += button[index];
+                              });
+                            },
+                            color: Colors.deepPurple,
+                            textColor: Colors.white,
+                            buttonText: button[index],
+                          );
+                        }
                       }
                   ),
                 ),
