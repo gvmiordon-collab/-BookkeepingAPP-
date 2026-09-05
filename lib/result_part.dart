@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 
 class ResultPart extends StatefulWidget {
   final String userQuestions;
+  final String finalQuestions;
   const ResultPart({
     super.key,
     required this.userQuestions,
+    required this.finalQuestions,
   });
 
   @override
@@ -26,29 +28,35 @@ class _ResultPartState extends State<ResultPart> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                child: Text(
-                   '\$ ${widget.userQuestions}',
-                  style: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                  ),
+              Text(
+                 '\$ ${widget.userQuestions}',
+                style: TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              Container(
-                child: Text(
-                    reminder,
-                  style: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                  ),
+
+             /* VerticalDivider(      距離問題 遟啲搞
+                color: Colors.red,    **記得加IntrinsicHeight 係ROW 之前**
+                thickness: 1,
+                width: 20,
+                indent: 10,
+                endIndent: 10,
+              ),  */
+
+
+              Text(
+                  reminder, // DO it later
+                style: TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
           ),
 
           Text(
-              'Add later',
+             'add later',
             style: TextStyle(
               fontSize: 25,
               fontWeight: FontWeight.bold,

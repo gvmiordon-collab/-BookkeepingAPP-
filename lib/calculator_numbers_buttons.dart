@@ -23,18 +23,23 @@ class CalculatorNumbersButtons extends StatelessWidget {
       onTap: buttomTopped,
       child: Padding(
         padding: const EdgeInsets.all(10.0),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(30),
-          child: Container(
+        child: Container(
+          decoration: BoxDecoration(
             color: color,
-            child: Center(
-              child: Text(
-                buttonText,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                ),
+            border: Border.all(
+              color: Colors.black,
+              width: 2.0,
+            ),
+            borderRadius: BorderRadius.circular(30),
+          ),
+
+          child: Center(
+            child: Text(
+              buttonText,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),

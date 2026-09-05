@@ -2,6 +2,7 @@ import 'package:bookkeeping/result_part.dart';
 import 'package:flutter/material.dart';
 import 'package:bookkeeping/calculator_numbers_buttons.dart';
 import 'package:bookkeeping/date_button.dart';
+import 'package:math_expressions/math_expressions.dart';
 
 
 class PageA extends StatefulWidget {
@@ -14,11 +15,12 @@ class PageA extends StatefulWidget {
 class _PageAState extends State<PageA> {
 
   String userQuestions = '';
+  String finalQuestions = '';
 
   final List<String> button =[
     '7', '8', '9', '÷', 'AC',
     '4', '5', '6', '×', '<-',
-    '1', '2', '3', '+', 'OK',
+    '1', '2', '3', '+', '=',
     '00', '0', '.', '-', 'OK',
   ];
 
@@ -42,13 +44,16 @@ class _PageAState extends State<PageA> {
             flex: 2,
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.greenAccent,
+                color: Colors.white,
                 border: Border.all(
                   color: Colors.black,
                   width: 2.0,
                 ),
               ),
-              child: ResultPart(userQuestions: userQuestions),
+              child: ResultPart(
+                  finalQuestions: finalQuestions,
+                  userQuestions: userQuestions
+              ),
             ),
           ),
           Expanded(
@@ -68,6 +73,7 @@ class _PageAState extends State<PageA> {
                             buttomTopped: () {
                               setState(() {
                                 userQuestions = '' ;
+                                finalQuestions = '';
                               });
                             },
                             color: Colors.green,
@@ -88,6 +94,16 @@ class _PageAState extends State<PageA> {
                             textColor: Colors.white,
                             buttonText: button[index],
                           );
+
+                        } else if(index == 14) { // Equal button (=)
+                          return CalculatorNumbersButtons(
+                            buttomTopped: () {
+                              equalPressed();
+                            },
+                            color: Colors.blueAccent,
+                            textColor: Colors.white,
+                            buttonText: button[index],
+                          );
                         }
                         else{
                           return CalculatorNumbersButtons(
@@ -96,8 +112,8 @@ class _PageAState extends State<PageA> {
                                 userQuestions += button[index];
                               });
                             },
-                            color: Colors.deepPurple,
-                            textColor: Colors.white,
+                            color: Colors.white,
+                            textColor: Colors.black,
                             buttonText: button[index],
                           );
                         }
@@ -111,4 +127,25 @@ class _PageAState extends State<PageA> {
       ) ,
     );
   }
+
+  void equalPressed() {
+    if (userQuestions.isEmpty) return;
+    setState(() {
+      String expressionText = userQuestions
+          .replaceAll('×', '*')
+          .replaceAll('÷', '/');
+
+      GrammarParser p = GrammarParser();
+      Expression exp = p.parse(expressionText);
+
+      ContextModel cm = ContextModel();
+      RealEvaluator evaluator = RealEvaluator(cm);
+      num eval = evaluator.evaluate(exp);
+
+        finalQuestions = eval.toString();
+        userQuestions = finalQuestions;
+    });
+
+  }
 }
+
