@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'page_a.dart';
+import 'package:bookkeeping/home_page/home.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: PageA(),
+      home: HomePage(),
     );
   }
 }

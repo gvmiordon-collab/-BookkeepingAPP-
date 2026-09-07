@@ -1,18 +1,18 @@
-import 'package:bookkeeping/result_part.dart';
+import 'package:bookkeeping/calculator/result_part.dart';
 import 'package:flutter/material.dart';
-import 'package:bookkeeping/calculator_numbers_buttons.dart';
-import 'package:bookkeeping/date_button.dart';
+import 'package:bookkeeping/calculator/date_button.dart';
+import 'package:bookkeeping/calculator/calculator_number_buttons.dart';
 import 'package:math_expressions/math_expressions.dart';
+import 'package:bookkeeping/calculator/expense_income_button.dart';
 
-
-class PageA extends StatefulWidget {
-  const PageA({super.key});
+class CalculatorPage extends StatefulWidget {
+  const CalculatorPage({super.key});
 
   @override
-  State<PageA> createState() => _PageAState();
+  State<CalculatorPage> createState() => _CalculatorPageState();
 }
 
-class _PageAState extends State<PageA> {
+class _CalculatorPageState extends State<CalculatorPage> {
 
   String userQuestions = '';
   String finalQuestions = '';
@@ -29,8 +29,17 @@ class _PageAState extends State<PageA> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.deepPurple[100],
-      appBar: AppBar(
-        title: const Text('Calculator'),
+      appBar:AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        // 1. 自動生成的返回鍵圖標如果是預設的，也可以自訂成你的黑箭頭：
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
+          onPressed: () => Navigator.maybePop(context),
+        ),
+        // 2. 將按鈕放入 title
+        title: const ExpenseIncomeButton(),
+        // 3. 強制不論 Android 或 iOS 都居中對齊
         centerTitle: true,
       ),
       body: Column(
