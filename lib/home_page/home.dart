@@ -1,9 +1,14 @@
-import 'package:bookkeeping/assets_card.dart';
+import 'package:bookkeeping/home_page/assets_card.dart';
 import 'package:flutter/material.dart';
 import 'package:bookkeeping/home_page/transactions_table.dart';
 import 'package:bookkeeping/calculator/calculator_page.dart';
-import 'package:bookkeeping/drawer_pages/drawer_buttons.dart';
-import 'package:bookkeeping/drawer_pages/asset_card_pages.dart';
+import 'package:bookkeeping/home_page/drawer_pages/drawer_buttons.dart';
+import 'package:bookkeeping/home_page/drawer_pages/asset_card_pages.dart';
+import 'package:bookkeeping/home_page/drawer_pages/categories_model_in_page/categories_pages.dart';
+import 'package:bookkeeping/home_page/month_year_picker.dart';
+import 'package:bookkeeping/test_page.dart';
+import 'package:bookkeeping/home_page/drawer_pages/fixed_item/fixed_item_pages.dart';
+import 'package:bookkeeping/home_page/monthly_expense_and_income_summary.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,9 +19,20 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 
+  bool _pickerExpanded = false;
+  DateTime _selectedDate = DateTime(2026, 9);
+
+  static const _months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+
   final List<String> buttonText =[
     'Asset Cards',
-    'History',
+    'Categories',
+    'Fixed items',
+    'History', //就咁display哂所有transaction_table 就可以
+    'Test Page',
   ];
 
   final List<String> date = [
@@ -32,17 +48,42 @@ class _HomePageState extends State<HomePage> {
   ];
 
   final List<String> assetAmount = [
-    '\$ 5000',
-    '\$ 2000',
-    '\$ 3000',
+    '5000',
+    '2000',
+    '3000',
   ];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    // AppBar 底部 y 座標（狀態欄 + 工具列高度）
+    final topOffset =
+        MediaQuery.of(context).padding.top + kToolbarHeight;
+
+    return Stack(
+      children: [
+         Scaffold(
       appBar: AppBar(
         elevation: 5.0,
-        title: const Text('Home Page'),
+        title: GestureDetector(
+          onTap: () =>
+              setState(() => _pickerExpanded = !_pickerExpanded),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '${_months[_selectedDate.month - 1]} ${_selectedDate.year}',
+                style: const TextStyle(
+                    fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              Icon(
+                _pickerExpanded
+                    ? Icons.arrow_drop_up
+                    : Icons.arrow_drop_down,
+                size: 28,
+              ),
+            ],
+          ),
+        ),
         centerTitle: true,
       ),
 
@@ -86,10 +127,29 @@ class _HomePageState extends State<HomePage> {
                       return DrawerButtons(
                         buttonText: buttonText[index],
                         onTap: () {
-                          if (index == 0) {
+                          if (index == 0) { //Asset Card
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => AssetCardPages()),
+                            );
+                          } else if (index == 1) { //Categories
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => CategoriesPages()),
+                            );
+                          } else if (index == 2) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => FixedItemPages()),
+                            );
+                          } else if (index == 4) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => TestPage(
+                                expense: 100,
+                                income: 200,
+                                balance: 300,
+                              )),
                             );
                           }
                         },
@@ -105,10 +165,17 @@ class _HomePageState extends State<HomePage> {
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: MonthlyExpenseAndIncomeSummary(),
+            ),
+          ),
+          SliverToBoxAdapter(
             child: SizedBox(
               height: 220,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
+                  itemCount: assetNamed.length,
                   itemBuilder: (BuildContext context, int index) {
                 return AssetsCard(
                   assetAmount: assetAmount[index],
@@ -155,7 +222,38 @@ class _HomePageState extends State<HomePage> {
       ),
 
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-
+    ),
+        // === 浮動面板層 ===
+        if (_pickerExpanded) ...[
+          // 半透明遮罩
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () => setState(() => _pickerExpanded = false),
+              child: Container(color: Colors.black.withOpacity(0.4)),
+            ),
+          ),
+          // 面板本體，貼喺 AppBar 下面
+          Positioned(
+            top: topOffset,
+            left: 0,
+            right: 0,
+            child: Material(
+              elevation: 4,
+              color: Colors.white,
+              child: MonthYearPanel(
+                initialDate: _selectedDate,
+                onChanged: (d) {
+                  setState(() {
+                    _selectedDate = d;
+                    _pickerExpanded = false;
+                  });
+                  // TODO: 喺度根據 d 重新 load 對應月份嘅資料
+                },
+              ),
+            ),
+          ),
+        ],
+    ],
     );
   }
 }

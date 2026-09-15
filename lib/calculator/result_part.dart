@@ -31,11 +31,12 @@ class _ResultPartState extends State<ResultPart> {
   }
 
 
-  final List<String> footnote =[
-    'FOOD',
+  final List<String> footnote =[  //呢度所出現的footnote 是由textfield 嗰度有填寫過並且User按下了(ok) button 的footnote
+    'FOOD',                       //所有footnote 都是按下了其對應的名稱後，會出現在textfield，方便User 唔需要再寫相同的footnote
     'McDonald',
     'one',
     'two',
+    'three',
 
   ];
 
@@ -81,7 +82,7 @@ class _ResultPartState extends State<ResultPart> {
           Expanded(
             flex: 2,
             child: ListView.builder(
-              scrollDirection: Axis.horizontal,
+              scrollDirection: Axis.horizontal,   //呢度最多放5個最近使用過的footnote，但唔計More
               // 💡 總數加 1，用來放置最後那個特別的 footnote
               itemCount: footnote.length + 1,
               itemBuilder: (BuildContext context, int index) {
@@ -136,21 +137,19 @@ class _ResultPartState extends State<ResultPart> {
                       },
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.grey[300], // 換個特別的顏色
+                          color: Colors.grey[200], // 換個特別的顏色
                           borderRadius: BorderRadius.circular(20),
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.add, size: 16,), // 加個 + 號圖標
-
                             Text(
-                              '新增',
+                              'More',
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
                               ),
                             ),
+                            Icon(Icons.mode_edit_outline_outlined, size: 16,), // 加個 + 號圖標
                           ],
                         ),
                       ),

@@ -14,16 +14,18 @@ class CalculatorPage extends StatefulWidget {
 
 class _CalculatorPageState extends State<CalculatorPage> {
 
+
+  bool isCategoriesSelected = true;
+
   String userQuestions = '';
   String finalQuestions = '';
 
   final List<Map<String, dynamic>> categoryItems = [
-    {'icon': Icons.add, 'label': 'Add'},
-    {'icon': Icons.add, 'label': 'Add'},
-    {'icon': Icons.add, 'label': 'Add'},
-    {'icon': Icons.add, 'label': 'Add'},
-    {'icon': Icons.add, 'label': 'Add'},
-    {'icon': Icons.add, 'label': 'Add'},
+    {'icon': Icons.add, 'label': 'Add'},  //呢個icon 一定係常駐係度，不論下方有冇其它Categories
+    {'icon': Icons.restaurant, 'label': 'Food'},
+    {'icon': Icons.directions_transit_sharp, 'label': 'Transportation'},
+    {'icon': Icons.shopping_bag_outlined, 'label': 'Snack'},
+    {'icon': Icons.grid_view_outlined, 'label': 'other'},
     // 之後想加多幾個分類，喺呢度加落去就得
   ];
 
@@ -48,7 +50,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
           onPressed: () => Navigator.maybePop(context),
         ),
         // 2. 將按鈕放入 title
-        title: const ExpenseIncomeButton(),  // 呢個BUTTON 只會令到Flex:6 個Part 的Categories 出現改變
+        title: const ExpenseIncomeButton(),  // 呢個ExpenseIncomeBUTTON 只會令到Flex:6 個Part 的Categories同埋result_part 的footnote出現改變
         // 3. 強制不論 Android 或 iOS 都居中對齊
         centerTitle: true,
         // ======== 在這裡加上右邊的三點按鈕 ========
@@ -110,20 +112,36 @@ class _CalculatorPageState extends State<CalculatorPage> {
               ),
               itemBuilder: (BuildContext context, int index) {
                 final item = categoryItems[index];
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(5),
-                      color: Colors.grey[300],
-                      child: Icon(item['icon'] as IconData),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      item['label'] as String,
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ],
+                return GestureDetector(
+                  onTap: () => setState(() => isCategoriesSelected = false
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(5),
+                        color: !isCategoriesSelected ? const Color(0xFFFBC02D) : Colors.transparent,
+                        // color: Colors.grey[300]  只有add icon 係任何時候都係呢個色
+                        child: Icon(
+                            item['icon'] as IconData,
+                          size: 30,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        child: Text(
+
+                          item['label'] as String,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          softWrap: false,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ),
+                    ],
+                  ),
                 );
               },
             ),

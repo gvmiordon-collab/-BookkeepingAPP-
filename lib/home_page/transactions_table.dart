@@ -36,7 +36,7 @@ class TransactionsTable extends StatelessWidget {
                         fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    '\$ -300',
+                    '\$ -200', //如果係總數係正數就用呢隻色color: Colors.lightBlue
                     style: TextStyle(
                         fontSize: 18,
                         color: Colors.orange,
@@ -60,11 +60,15 @@ class TransactionsTable extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
                     children: [
-                      Text('Transportation',
+                      Icon(Icons.directions_transit_sharp),
+                      SizedBox(
+                        width: 4,
+                      ),
+                      Text('Transportation',  //呢度係footnote的對應地方，如果user有係calculator_pages中的footnote textfield 度有寫嘢，否則按照Categories icon所設定的名字
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       Spacer(),
                       Text(
-                          '\$ 100',
+                          '\$ -100',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
                       ),
 
@@ -84,11 +88,15 @@ class TransactionsTable extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
                     children: [
+                      Icon(Icons.directions_transit_sharp),
+                      SizedBox(
+                        width: 4,
+                      ),
                       Text('Transportation',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       Spacer(),
                       Text(
-                          '\$ 100',
+                          '\$ -100',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
                       ),
                     ],
@@ -106,7 +114,11 @@ class TransactionsTable extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
                     children: [
-                      Text('Transportation',
+                      Icon(Icons.directions_transit_sharp),
+                      SizedBox(
+                        width: 4,
+                      ),
+                      Text('Salary',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       Spacer(),
                       Text(

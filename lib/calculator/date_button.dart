@@ -14,49 +14,57 @@ class _DateButtonState extends State<DateButton> {
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 15),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(30),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(
-              color: Colors.black,
-              width: 2.0,
-            ),
-            borderRadius: BorderRadius.circular(30),
-          ),
-          //color: Colors.white,
-          padding: const EdgeInsets.all(10),
-          child: Row(
-            children: [
-              Expanded(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children:[
-                      const Icon( // this is the button but we do it later
-                        Icons.arrow_left,
-                        fontWeight: FontWeight.bold,
-                        size: 30,
-                      ),
-                      const Icon(
-                          Icons.calendar_today,
-                          fontWeight: FontWeight.bold,
-                        size: 23,
-                      ),
-                      Text(
-                          'Today Thu, Sep 03, 2026',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 22,
-                        ),
-                      ),
-                      const Icon( // this is the button but we do it later
-                        Icons.arrow_right,
-                        fontWeight: FontWeight.bold,
-                        size: 30,
-                      ),
-                    ],
-                  ),
+        child: GestureDetector(
+          onTap: () {
+            DatePickerDialog(
+              firstDate: DateTime(2000),
+              lastDate: DateTime(2100),
+            );
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(
+                color: Colors.black,
+                width: 2.0,
               ),
-            ],
+              borderRadius: BorderRadius.circular(30),
+            ),
+            //color: Colors.white,
+            padding: const EdgeInsets.all(10),
+            child: Row(
+              children: [
+                Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children:[
+                        const Icon( // this is the button but we do it later
+                          Icons.arrow_left,
+                          fontWeight: FontWeight.bold,
+                          size: 30,
+                        ),
+                        const Icon(
+                            Icons.calendar_today,
+                            fontWeight: FontWeight.bold,
+                          size: 23,
+                        ),
+                        Text(
+                            'Today Thu, Sept 03, 2026',  //其它樣式 'Tue, Sept 11, 2026' , 'Yesterday Thu, Sept 10, 2026' , 'Tomorrow Sat, Sept 12, 2026'
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 22,
+                          ),
+                        ),
+                        const Icon( // this is the button but we do it later
+                          Icons.arrow_right,
+                          fontWeight: FontWeight.bold,
+                          size: 30,
+                        ),
+                      ],
+                    ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
