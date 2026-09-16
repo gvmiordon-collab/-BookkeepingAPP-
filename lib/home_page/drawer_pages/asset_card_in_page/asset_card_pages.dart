@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bookkeeping/home_page/assets_card.dart';
+import 'package:bookkeeping/home_page/drawer_pages/asset_card_in_page/add_a_new_asset_card.dart';
 
 class AssetCardPages extends StatefulWidget {
   const AssetCardPages({super.key});
@@ -37,6 +38,31 @@ class _AssetCardPagesState extends State<AssetCardPages> {
           assetNamed: assetNamed[index],
         );
       }),
+
+      floatingActionButton: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.deepOrange[300],
+          shape: CircleBorder(),
+          padding: EdgeInsets.all(15),
+          elevation: 5,
+          side: BorderSide(
+            color: Colors.black,
+            width: 2.0,
+          ),
+        ),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddANewAssetCard()),
+          );
+        } ,
+        child: Icon(Icons.add,
+          color: Colors.white,
+          size: 40,),
+      ),
+
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+
     );
   }
 }

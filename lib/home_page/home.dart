@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:bookkeeping/home_page/transactions_table.dart';
 import 'package:bookkeeping/calculator/calculator_page.dart';
 import 'package:bookkeeping/home_page/drawer_pages/drawer_buttons.dart';
-import 'package:bookkeeping/home_page/drawer_pages/asset_card_pages.dart';
+import 'package:bookkeeping/home_page/drawer_pages/asset_card_in_page/asset_card_pages.dart';
 import 'package:bookkeeping/home_page/drawer_pages/categories_model_in_page/categories_pages.dart';
 import 'package:bookkeeping/home_page/month_year_picker.dart';
 import 'package:bookkeeping/test_page.dart';
