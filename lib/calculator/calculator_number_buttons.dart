@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 class CalculatorNumbersButtons extends StatelessWidget {
-  
-  final color;
-  final textColor;
+
+  final Color color;
+  final Color textColor;
   final String buttonText;
-  final buttomTopped;
+  final VoidCallback? buttomTopped;
 
   
   const CalculatorNumbersButtons({

@@ -15,11 +15,14 @@ class _DateButtonState extends State<DateButton> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(30),
         child: GestureDetector(
-          onTap: () {
-            DatePickerDialog(
+          onTap: () async {
+            final picked = await showDatePicker(
+              context: context,
+              initialDate: DateTime.now(),
               firstDate: DateTime(2000),
               lastDate: DateTime(2100),
             );
+            // TODO: 駁 DB 嗰陣,揀咗嘅 date 要 setState 返上層
           },
           child: Container(
             decoration: BoxDecoration(

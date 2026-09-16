@@ -1,29 +1,39 @@
 import 'package:flutter/material.dart';
 
 class ExpenseIncomeButton extends StatefulWidget {
-  const ExpenseIncomeButton({super.key});
+  final bool initialIsExpense;
+  final ValueChanged<bool>? onChanged;
+
+  const ExpenseIncomeButton({
+    super.key,
+    this.initialIsExpense = true,
+    this.onChanged,
+  });
 
   @override
   State<ExpenseIncomeButton> createState() => _ExpenseIncomeButtonState();
 }
 
 class _ExpenseIncomeButtonState extends State<ExpenseIncomeButton> {
-  bool isExpenseSelected = true;
+  late bool isExpenseSelected = widget.initialIsExpense;
+
+  void _select(bool expense) {
+    setState(() => isExpenseSelected = expense);
+    widget.onChanged?.call(expense);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      // 整體的外框與圓角
       decoration: BoxDecoration(
         border: Border.all(color: Colors.black, width: 2),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min, // 確保寬度只佔用按鈕大小，才能在 AppBar 中置中
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Expense 按鈕
           GestureDetector(
-            onTap: () => setState(() => isExpenseSelected = true),
+            onTap: () => _select(true),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
@@ -36,9 +46,8 @@ class _ExpenseIncomeButtonState extends State<ExpenseIncomeButton> {
               child: const Text('Expense', style: TextStyle(color: Colors.black)),
             ),
           ),
-          // Income 按鈕 (補全你的程式碼)
           GestureDetector(
-            onTap: () => setState(() => isExpenseSelected = false),
+            onTap: () => _select(false),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(

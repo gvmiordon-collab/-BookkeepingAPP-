@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class DrawerButtons extends StatelessWidget {
 
    final String buttonText;
-   final onTap;
+   final VoidCallback? onTap;
 
   const DrawerButtons({
     super.key,
