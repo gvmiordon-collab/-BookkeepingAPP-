@@ -1,17 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:bookkeeping/home_page/home.dart';
+import 'package:bookkeeping/database/app_database.dart';
+import 'package:bookkeeping/providers/category_provider.dart';
+import 'package:bookkeeping/providers/transaction_provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp()); // 由 const MyApp() 改為 MyApp(),因為下面加咗個非 const field
 }
+
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  MyApp({super.key});
+
+  final AppDatabase _db = AppDatabase();
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: HomePage(),
+    return MultiProvider(
+      providers: [
+        Provider<AppDatabase>.value(value: _db),
+        ChangeNotifierProvider(create: (_) => CategoryProvider(_db)),
+        ChangeNotifierProvider(create: (_) => TransactionProvider(_db)),
+      ],
+      child: MaterialApp(
+        home: HomePage(),
+      ),
     );
   }
 }
-//test
