@@ -1,13 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:bookkeeping/providers/category_provider.dart';
+import 'package:bookkeeping/widgets/selectable_category_icon.dart';
+import 'package:provider/provider.dart';
+
 
 class CustomCategories extends StatefulWidget {
-  const  CustomCategories({super.key});
+  final bool isExpense;
+  const  CustomCategories({super.key, required this.isExpense});
 
   @override
   State<CustomCategories> createState() => _CustomCategoriesState();
+
 }
 
 class _CustomCategoriesState extends State<CustomCategories> {
+
+  // State 入面加：
+  int? _selectedIconIndex; // 用 index 唔用 codePoint，因為 list 而家有重複 icon，唔會出現一齊被揀中
+
+  Future<void> _confirm() async {
+    final name = _newCategoryName.text.trim();
+    if (name.isEmpty || _selectedIconIndex == null) return; // ⚠️ 見下面
+    await context.read<CategoryProvider>().addCategory(
+      label: name,
+      iconCodePoint: categoryItems[_selectedIconIndex!].codePoint,
+      isExpense: widget.isExpense,
+    );
+    if (!mounted) return;
+    Navigator.pop(context);
+  }
+
+
   final TextEditingController _newCategoryName = TextEditingController();
 
   @override
@@ -113,8 +136,17 @@ class _CustomCategoriesState extends State<CustomCategories> {
                         crossAxisSpacing: spacing,
                         childAspectRatio: 1.0,
                       ),
-                      itemBuilder: (context, index) =>
-                          Icon(categoryItems[index], size: 32),
+                      itemBuilder: (context, index) => GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => setState(() => _selectedIconIndex = index),
+                        child: Center( // ⚠️ 一定要有 Center,否則 Stack 會撐滿成個格,圓形會跑去格仔右下角而唔係 icon 右下角
+                          child: SelectableCategoryIcon(
+                            icon: categoryItems[index],
+                            size: 32,
+                            selected: index == _selectedIconIndex,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 );
@@ -138,7 +170,7 @@ class _CustomCategoriesState extends State<CustomCategories> {
               ),
               minimumSize: Size(double.infinity,50)
           ),
-          onPressed: () {},
+          onPressed: _confirm,
           child: Text(
             'Confirm',
             style: TextStyle(

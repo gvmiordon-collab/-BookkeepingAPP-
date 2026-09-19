@@ -34,6 +34,28 @@ class TransactionEntries extends Table {
 
 @DriftDatabase(tables: [Categories, TransactionEntries])
 class AppDatabase extends _$AppDatabase {
+
+  Future<void> _seedDefaultCategories() async {
+    final defaults = <(String, IconData, bool)>[
+      ('Food', Icons.restaurant, true),
+      ('Transportation', Icons.directions_transit_sharp, true),
+      ('Snack', Icons.shopping_bag_outlined, true),
+      ('other', Icons.grid_view_outlined, true),
+      ('Salary', Icons.payments_outlined, false),
+      ('other', Icons.grid_view_outlined, false),
+    ];
+    await batch((b) {
+      b.insertAll(categories, [
+        for (final d in defaults)
+          CategoriesCompanion.insert(
+            label: d.$1,
+            iconCodePoint: d.$2.codePoint,
+            isExpense: d.$3,
+          ),
+      ]);
+    });
+  }
+
   AppDatabase() : super(_openConnection());
 
   @override
@@ -65,23 +87,3 @@ LazyDatabase _openConnection() {
   });
 }
 
-Future<void> _seedDefaultCategories() async {
-  final defaults = <(String, IconData, bool)>[
-    ('Food', Icons.restaurant, true),
-    ('Transportation', Icons.directions_transit_sharp, true),
-    ('Snack', Icons.shopping_bag_outlined, true),
-    ('other', Icons.grid_view_outlined, true),
-    ('Salary', Icons.payments_outlined, false),
-    ('other', Icons.grid_view_outlined, false),
-  ];
-  await batch((b) {
-    b.insertAll(categories, [
-      for (final d in defaults)
-        CategoriesCompanion.insert(
-          label: d.$1,
-          iconCodePoint: d.$2.codePoint,
-          isExpense: d.$3,
-        ),
-    ]);
-  });
-}

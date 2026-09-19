@@ -4,6 +4,7 @@ import 'package:bookkeeping/calculator/date_button.dart';
 import 'package:bookkeeping/calculator/calculator_number_buttons.dart';
 import 'package:math_expressions/math_expressions.dart';
 import 'package:bookkeeping/calculator/expense_income_button.dart';
+import 'package:bookkeeping/widgets/selectable_category_icon.dart';
 
 class CalculatorPage extends StatefulWidget {
   const CalculatorPage({super.key});
@@ -121,12 +122,13 @@ class _CalculatorPageState extends State<CalculatorPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(5),
-                        color: index == _selectedCategoryIndex
-                            ? const Color(0xFFFBC02D)
-                            : Colors.transparent,
-                        child: Icon(item['icon'] as IconData, size: 30),
+                      Padding(
+                        padding: const EdgeInsets.all(5), // 保留原本 padding,格仔高度唔變
+                        child: SelectableCategoryIcon(
+                          icon: item['icon'] as IconData,
+                          size: 30,
+                          selected: index == _selectedCategoryIndex,
+                        ),
                       ),
                       const SizedBox(height: 5),
                       Padding(

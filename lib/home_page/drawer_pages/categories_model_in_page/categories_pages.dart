@@ -101,10 +101,10 @@ class _CategoriesPagesState extends State<CategoriesPages> {
                       padding: const EdgeInsets.all(15.0),
                       child: Column(
                         children: [
-                          Icon(item['icon'] as IconData),
+                          Icon(categoryIconData(item.iconCodePoint)),
                           const SizedBox(height: 5),
                           Text(
-                            item['label'] as String,
+                            item.label,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
@@ -139,8 +139,7 @@ class _CategoriesPagesState extends State<CategoriesPages> {
             onPressed: (){
             Navigator.push(
                 context,
-              MaterialPageRoute(builder: (context) => CustomCategories()
-              )
+              MaterialPageRoute(builder: (context) => CustomCategories(isExpense: _isExpense)),
             );
             },
             child: Text(
