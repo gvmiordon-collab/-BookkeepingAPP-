@@ -9,6 +9,8 @@ import 'package:bookkeeping/home_page/month_year_picker.dart';
 import 'package:bookkeeping/test_page.dart';
 import 'package:bookkeeping/home_page/drawer_pages/fixed_item/fixed_item_pages.dart';
 import 'package:bookkeeping/home_page/monthly_expense_and_income_summary.dart';
+import 'package:provider/provider.dart';
+import 'package:bookkeeping/providers/transaction_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -35,11 +37,7 @@ class _HomePageState extends State<HomePage> {
     'Test Page',
   ];
 
-  final List<String> date = [
-    '2026/09/05 Sat',
-    '2026/09/04 Fri',
-    '2026/09/03 Thu',
-  ];
+  DateTime _selectedDate = DateTime(DateTime.now().year, DateTime.now().month);
 
   final List<String> assetNamed = [
     'Total Balance',
@@ -58,6 +56,10 @@ class _HomePageState extends State<HomePage> {
     // AppBar 底部 y 座標（狀態欄 + 工具列高度）
     final topOffset =
         MediaQuery.of(context).padding.top + kToolbarHeight;
+
+    final txProvider = context.watch<TransactionProvider>();
+    final grouped = txProvider.transactionsGroupedByDate(_selectedDate);
+    final days = grouped.keys.toList(); // 已經係新 → 舊
 
     return Stack(
       children: [
@@ -167,7 +169,10 @@ class _HomePageState extends State<HomePage> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-              child: MonthlyExpenseAndIncomeSummary(),
+              child: MonthlyExpenseAndIncomeSummary(
+                expense: txProvider.totalExpenseForMonth(_selectedDate),
+                income: txProvider.totalIncomeForMonth(_selectedDate),
+              ),
             ),
           ),
           SliverToBoxAdapter(
@@ -187,14 +192,13 @@ class _HomePageState extends State<HomePage> {
           ),
 
           SliverList(
-              delegate: SliverChildBuilderDelegate(
+            delegate: SliverChildBuilderDelegate(
                   (BuildContext context, int index) {
-                    return TransactionsTable(
-                        date: date[index]
-                    );
-                  },
-                childCount: date.length,
-              ),
+                final day = days[index];
+                return TransactionsTable(date: day, entries: grouped[day]!);
+              },
+              childCount: days.length,
+            ),
           ),
         ],
     ),

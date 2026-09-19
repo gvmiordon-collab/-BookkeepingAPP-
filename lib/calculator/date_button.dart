@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:bookkeeping/utils/formatters.dart';
 
 class DateButton extends StatefulWidget {
-  const DateButton({super.key});
+  final DateTime date;
+  final ValueChanged<DateTime> onChanged;
+
+  const DateButton({super.key, required this.date, required this.onChanged});
 
   @override
   State<DateButton> createState() => _DateButtonState();
@@ -18,11 +23,11 @@ class _DateButtonState extends State<DateButton> {
           onTap: () async {
             final picked = await showDatePicker(
               context: context,
-              initialDate: DateTime.now(),
+              initialDate: widget.date,
               firstDate: DateTime(2000),
               lastDate: DateTime(2100),
             );
-            // TODO: 駁 DB 嗰陣,揀咗嘅 date 要 setState 返上層
+            if (picked != null) widget.onChanged(picked);
           },
           child: Container(
             decoration: BoxDecoration(
@@ -41,27 +46,39 @@ class _DateButtonState extends State<DateButton> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children:[
-                        const Icon( // this is the button but we do it later
-                          Icons.arrow_left,
-                          fontWeight: FontWeight.bold,
-                          size: 30,
-                        ),
-                        const Icon(
-                            Icons.calendar_today,
+                        GestureDetector( // 前一日
+                          onTap: () => widget.onChanged(DateTime(
+                              widget.date.year, widget.date.month, widget.date.day - 1)),
+                          child: const Icon(
+                            Icons.arrow_left,
                             fontWeight: FontWeight.bold,
-                          size: 23,
-                        ),
-                        Text(
-                            'Today Thu, Sept 03, 2026',  //其它樣式 'Tue, Sept 11, 2026' , 'Yesterday Thu, Sept 10, 2026' , 'Tomorrow Sat, Sept 12, 2026'
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 22,
+                            size: 30,
                           ),
                         ),
-                        const Icon( // this is the button but we do it later
-                          Icons.arrow_right,
+                        const Icon(
+                          Icons.calendar_today,
                           fontWeight: FontWeight.bold,
-                          size: 30,
+                          size: 23,
+                        ),
+                        Flexible( // ⚠️ 見下面假設 4
+                          child: AutoSizeText(
+                            fmtDateButton(widget.date),
+                            maxLines: 1,
+                            minFontSize: 12,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 22,
+                            ),
+                          ),
+                        ),
+                        GestureDetector( // 後一日
+                          onTap: () => widget.onChanged(DateTime(
+                              widget.date.year, widget.date.month, widget.date.day + 1)),
+                          child: const Icon(
+                            Icons.arrow_right,
+                            fontWeight: FontWeight.bold,
+                            size: 30,
+                          ),
                         ),
                       ],
                     ),

@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:bookkeeping/utils/formatters.dart';
 
 class MonthlyExpenseAndIncomeSummary extends StatefulWidget {
-  const MonthlyExpenseAndIncomeSummary({super.key});
+  final double expense;
+  final double income;
+
+  const MonthlyExpenseAndIncomeSummary({
+    super.key,
+    required this.expense,
+    required this.income,
+  });
 
   @override
   State<MonthlyExpenseAndIncomeSummary> createState() => _MonthlyExpenseAndIncomeSummaryState();
@@ -53,7 +61,7 @@ class _MonthlyExpenseAndIncomeSummaryState extends State<MonthlyExpenseAndIncome
                 ],
               ),
               Text(
-                '\$10,000,000,203.4',
+                '\$${fmtAmount(widget.expense, grouped: true)}',   // 原本 '\$10,000,000,203.4'
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ],
@@ -98,7 +106,7 @@ class _MonthlyExpenseAndIncomeSummaryState extends State<MonthlyExpenseAndIncome
                 ],
               ),
               Text(
-                '\$10,00',
+                '\$${fmtAmount(widget.income, grouped: true)}',    // 原本 '\$10,00'
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ],

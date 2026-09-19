@@ -23,7 +23,10 @@ class TransactionProvider extends ChangeNotifier {
     return _transactions
         .where((t) => t.date.year == month.year && t.date.month == month.month)
         .toList()
-      ..sort((a, b) => b.date.compareTo(a.date));
+      ..sort((a, b) {
+        final c = b.date.compareTo(a.date);
+        return c != 0 ? c : b.id.compareTo(a.id); // 同日 → 新入嗰筆(id 大)排前
+      });
   }
 
   /// 俾 TransactionsTable 逐日 render 用
