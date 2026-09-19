@@ -3,6 +3,8 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+// import 區加呢行（⚠️ DB 檔會依賴 Flutter，想避免嘅話可以改寫死 codePoint 數字）
+import 'package:flutter/material.dart' show Icons, IconData;
 
 part 'app_database.g.dart';
 
@@ -39,7 +41,10 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-    onCreate: (Migrator m) => m.createAll(),
+    onCreate: (Migrator m) async {
+      await m.createAll();
+      await _seedDefaultCategories();
+    },
     onUpgrade: (Migrator m, int from, int to) async {
       if (from < 2) {
         await m.addColumn(categories, categories.isArchived);
@@ -57,5 +62,26 @@ LazyDatabase _openConnection() {
       file,
       setup: (db) => db.execute('PRAGMA foreign_keys = ON'),
     );
+  });
+}
+
+Future<void> _seedDefaultCategories() async {
+  final defaults = <(String, IconData, bool)>[
+    ('Food', Icons.restaurant, true),
+    ('Transportation', Icons.directions_transit_sharp, true),
+    ('Snack', Icons.shopping_bag_outlined, true),
+    ('other', Icons.grid_view_outlined, true),
+    ('Salary', Icons.payments_outlined, false),
+    ('other', Icons.grid_view_outlined, false),
+  ];
+  await batch((b) {
+    b.insertAll(categories, [
+      for (final d in defaults)
+        CategoriesCompanion.insert(
+          label: d.$1,
+          iconCodePoint: d.$2.codePoint,
+          isExpense: d.$3,
+        ),
+    ]);
   });
 }

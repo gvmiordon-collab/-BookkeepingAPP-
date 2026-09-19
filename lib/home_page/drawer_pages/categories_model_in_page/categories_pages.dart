@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:bookkeeping/calculator/expense_income_button.dart';
 import 'package:bookkeeping/home_page/drawer_pages/categories_model_in_page/add_a_new_category.dart';
+import 'package:provider/provider.dart';
+import 'package:bookkeeping/providers/category_provider.dart';
+import 'package:bookkeeping/utils/category_icon.dart';
 
 class CategoriesPages extends StatefulWidget {
   const CategoriesPages({super.key});
@@ -12,17 +15,15 @@ class CategoriesPages extends StatefulWidget {
 class _CategoriesPagesState extends State<CategoriesPages> {
 
 
-  final List<Map<String, dynamic>> categoryItems = [
-    {'icon': Icons.restaurant, 'label': 'Food'},
-    {'icon': Icons.directions_transit_sharp, 'label': 'Transportation'},
-    {'icon': Icons.shopping_bag_outlined, 'label': 'Snack'},
-    {'icon': Icons.grid_view_outlined, 'label': 'other'},
-    {'icon': Icons.grid_view_outlined, 'label': 'other'},
-    // 之後想加多幾個分類，喺呢度加落去就得
-  ];
+// State 入面：刪走成個 categoryItems list，改成
+  bool _isExpense = true;
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<CategoryProvider>();
+    final items = _isExpense
+        ? provider.activeExpenseCategories
+        : provider.activeIncomeCategories;
     return Scaffold(
       appBar: AppBar(
         title: Text('Categories'),
@@ -40,7 +41,7 @@ class _CategoriesPagesState extends State<CategoriesPages> {
         child: Column(
           children: [
             ExpenseIncomeButton(
-
+              onChanged: (v) => setState(() => _isExpense = v),
             ),
             SizedBox(
               height: 10,
@@ -64,7 +65,7 @@ class _CategoriesPagesState extends State<CategoriesPages> {
             Expanded(
               child: GridView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                itemCount: categoryItems.length,
+                itemCount: items.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 4,
                   mainAxisSpacing: 12,
@@ -72,7 +73,7 @@ class _CategoriesPagesState extends State<CategoriesPages> {
                   childAspectRatio: 0.9,
                 ),
                 itemBuilder: (BuildContext context, int index) {
-                  final item = categoryItems[index];
+                  final item = items[index];
                   return Container(/*
                     在按了上方的 icon: Icon(Icons.edit_sharp)， 這個Container會有個用stack的widget(樣式如下) 堆疊係個Border 的左上角
                                 Container(
