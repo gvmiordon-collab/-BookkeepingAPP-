@@ -11,6 +11,8 @@ import 'package:bookkeeping/home_page/drawer_pages/fixed_item/fixed_item_pages.d
 import 'package:bookkeeping/home_page/monthly_expense_and_income_summary.dart';
 import 'package:provider/provider.dart';
 import 'package:bookkeeping/providers/transaction_provider.dart';
+import 'package:bookkeeping/providers/asset_provider.dart';
+import 'package:bookkeeping/utils/formatters.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -38,20 +40,11 @@ class _HomePageState extends State<HomePage> {
 
   DateTime _selectedDate = DateTime(DateTime.now().year, DateTime.now().month);
 
-  final List<String> assetNamed = [
-    'Total Balance',
-    'Cash',
-    'Bank',
-  ];
 
-  final List<String> assetAmount = [
-    '5000',
-    '2000',
-    '3000',
-  ];
 
   @override
   Widget build(BuildContext context) {
+    final cards = context.watch<AssetProvider>().displayCards;
     // AppBar 底部 y 座標（狀態欄 + 工具列高度）
     final topOffset =
         MediaQuery.of(context).padding.top + kToolbarHeight;
@@ -179,13 +172,13 @@ class _HomePageState extends State<HomePage> {
               height: 220,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                  itemCount: assetNamed.length,
-                  itemBuilder: (BuildContext context, int index) {
-                return AssetsCard(
-                  assetAmount: assetAmount[index],
-                  assetNamed: assetNamed[index],
-                );
-              },
+                itemCount: cards.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return AssetsCard(
+                    assetNamed: cards[index].name,
+                    assetAmount: fmtAmount(cards[index].balance, grouped: true),
+                  );
+                },
               ),
             ),
           ),
@@ -232,7 +225,7 @@ class _HomePageState extends State<HomePage> {
           Positioned.fill(
             child: GestureDetector(
               onTap: () => setState(() => _pickerExpanded = false),
-              child: Container(color: Colors.black.withOpacity(0.4)),
+              child: Container(color: Colors.black.withValues(alpha: 0.4)),
             ),
           ),
           // 面板本體，貼喺 AppBar 下面
@@ -250,7 +243,6 @@ class _HomePageState extends State<HomePage> {
                     _selectedDate = d;
                     _pickerExpanded = false;
                   });
-                  // TODO: 喺度根據 d 重新 load 對應月份嘅資料
                 },
               ),
             ),

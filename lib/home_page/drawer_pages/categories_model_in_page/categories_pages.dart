@@ -101,7 +101,7 @@ class _CategoriesPagesState extends State<CategoriesPages> {
                       padding: const EdgeInsets.all(15.0),
                       child: Column(
                         children: [
-                          Icon(categoryIconData(item.iconCodePoint)),
+                          Icon(categoryIconData(item.iconKey)),
                           const SizedBox(height: 5),
                           Text(
                             item.label,

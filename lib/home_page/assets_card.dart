@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:auto_size_text/auto_size_text.dart';   // ← import
 
 class AssetsCard extends StatefulWidget {
 
@@ -41,8 +42,11 @@ class _AssetsCardState extends State<AssetsCard> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text(
+                AutoSizeText(
                   '\$ ${widget.assetAmount}',
+                  maxLines: 1,
+                  minFontSize: 20,                 // ⚠️ 下限我暫定 20,自己試
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 60,

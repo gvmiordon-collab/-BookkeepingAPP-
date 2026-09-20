@@ -57,6 +57,7 @@ class TransactionProvider extends ChangeNotifier {
     required double amount,
     required bool isExpense,
     required int categoryId,
+    int? assetId,
     String? footnote,
   }) {
     return _db.into(_db.transactionEntries).insert(
@@ -65,6 +66,7 @@ class TransactionProvider extends ChangeNotifier {
         amount: amount,
         isExpense: isExpense,
         categoryId: categoryId,
+        assetId: Value(assetId),
         footnote: Value(footnote),
       ),
     );
@@ -81,6 +83,7 @@ class TransactionProvider extends ChangeNotifier {
     required double amount,
     required bool isExpense,
     required int categoryId,
+    int? assetId,
     String? footnote,
   }) {
     return _db.update(_db.transactionEntries).replace(
@@ -90,6 +93,7 @@ class TransactionProvider extends ChangeNotifier {
         amount: amount,
         isExpense: isExpense,
         categoryId: categoryId,
+        assetId: assetId,
         footnote: footnote,
       ),
     );

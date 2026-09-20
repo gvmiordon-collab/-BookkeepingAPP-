@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:bookkeeping/providers/asset_provider.dart';
 
 class AddANewAssetCard extends StatefulWidget {
   const AddANewAssetCard({super.key});
@@ -11,6 +13,27 @@ class _AddANewAssetCardState extends State<AddANewAssetCard> {
 
   final TextEditingController _newAssetName = TextEditingController();
   final TextEditingController _amount = TextEditingController();
+
+  bool _saving = false;
+
+  Future<void> _confirm() async {
+    if (_saving) return;
+    final name = _newAssetName.text.trim();
+    if (name.isEmpty) return;
+    final amountText = _amount.text.trim().replaceAll(',', '');
+    final initial = amountText.isEmpty ? 0.0 : double.tryParse(amountText);
+    if (initial == null) return; // ⚠️ 數字打錯 → 靜雞雞唔儲(同 Calculator 一致)
+    _saving = true;
+    try {
+      await context
+          .read<AssetProvider>()
+          .addAsset(name: name, initialBalance: initial);
+    } finally {
+      _saving = false;
+    }
+    if (!mounted) return;
+    Navigator.pop(context);
+  }
 
   @override
   void dispose() {
@@ -52,7 +75,7 @@ class _AddANewAssetCardState extends State<AddANewAssetCard> {
               ),
               minimumSize: Size(double.infinity,50)
           ),
-          onPressed: () {},
+          onPressed: _confirm,
           child: Text(
             'Confirm',
             style: TextStyle(

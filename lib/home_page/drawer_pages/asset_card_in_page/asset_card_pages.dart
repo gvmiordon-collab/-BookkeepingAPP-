@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:bookkeeping/home_page/assets_card.dart';
 import 'package:bookkeeping/home_page/drawer_pages/asset_card_in_page/add_a_new_asset_card.dart';
+import 'package:provider/provider.dart';
+import 'package:bookkeeping/providers/asset_provider.dart';
+import 'package:bookkeeping/utils/formatters.dart';
 
 class AssetCardPages extends StatefulWidget {
   const AssetCardPages({super.key});
@@ -10,20 +13,11 @@ class AssetCardPages extends StatefulWidget {
 }
 
 class _AssetCardPagesState extends State<AssetCardPages> {
-  final List<String> assetNamed = [
-    'Total Balance',
-    'Cash',
-    'Bank',
-  ];
 
-  final List<String> assetAmount = [
-    '5000',
-    '2000',
-    '3000',
-  ];
 
   @override
   Widget build(BuildContext context) {
+    final cards = context.watch<AssetProvider>().displayCards;
     return Scaffold(
       appBar: AppBar(
         elevation: 5.0,
@@ -31,13 +25,14 @@ class _AssetCardPagesState extends State<AssetCardPages> {
         centerTitle: true,
       ),
       body: ListView.builder(
-          itemCount: assetNamed.length,
-          itemBuilder: (BuildContext context, int index){
-        return AssetsCard(
-          assetAmount: assetAmount[index],
-          assetNamed: assetNamed[index],
-        );
-      }),
+        itemCount: cards.length,
+        itemBuilder: (BuildContext context, int index) {
+          return AssetsCard(
+            assetNamed: cards[index].name,
+            assetAmount: fmtAmount(cards[index].balance, grouped: true),
+          );
+        },
+      ),
 
       floatingActionButton: ElevatedButton(
         style: ElevatedButton.styleFrom(

@@ -2,7 +2,6 @@ import 'package:bookkeeping/calculator/result_part.dart';
 import 'package:flutter/material.dart';
 import 'package:bookkeeping/calculator/date_button.dart';
 import 'package:bookkeeping/calculator/calculator_number_buttons.dart';
-import 'package:math_expressions/math_expressions.dart';
 import 'package:bookkeeping/calculator/expense_income_button.dart';
 import 'package:bookkeeping/widgets/selectable_category_icon.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +11,9 @@ import 'package:bookkeeping/utils/category_icon.dart';
 import 'package:bookkeeping/home_page/drawer_pages/categories_model_in_page/add_a_new_category.dart';
 import 'package:bookkeeping/utils/formatters.dart';
 import 'package:bookkeeping/database/app_database.dart' show TransactionEntry;
+import 'package:bookkeeping/providers/asset_provider.dart';
+import 'package:bookkeeping/calculator/calculator_logic.dart';   // ← 加
+
 
 class CalculatorPage extends StatefulWidget {
   final TransactionEntry? editing; // null = 新增;有值 = 編輯嗰筆
@@ -25,7 +27,9 @@ class _CalculatorPageState extends State<CalculatorPage> {
 
   int? _selectedCategoryId; // 用 DB 嘅 id,唔用 index(list 會隨 Expense/Income、新增分類而變)
   bool isExpenseSelected = true;
-  DateTime _selectedDate = DateTime.now(); // ⚠️ DateButton 未駁,暫時用今日
+  int? _selectedAssetId; // null = 未手動揀 → 用 AssetProvider.defaultAssetId(第一個帳戶)
+  bool _saving = false;  // 防雙擊重複儲存
+  DateTime _selectedDate = DateTime.now();
 
   final TextEditingController _footnoteController = TextEditingController();
 
@@ -36,6 +40,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
     if (e != null) {
       isExpenseSelected = e.isExpense;
       _selectedCategoryId = e.categoryId;
+      _selectedAssetId = e.assetId;
       _selectedDate = e.date;
       userQuestions = fmtAmount(e.amount);
       finalQuestions = userQuestions;
@@ -65,6 +70,10 @@ class _CalculatorPageState extends State<CalculatorPage> {
 
   @override
   Widget build(BuildContext context) {
+    final assetProvider = context.watch<AssetProvider>();
+    final assets = assetProvider.activeAssets;
+    // 冇手動揀 → 第一個帳戶;所以就算用家冇 Cash 都唔會出錯
+    final effectiveAssetId = _selectedAssetId ?? assetProvider.defaultAssetId;
     final categoryProvider = context.watch<CategoryProvider>();
     final categories = isExpenseSelected
         ? categoryProvider.activeExpenseCategories
@@ -98,37 +107,29 @@ class _CalculatorPageState extends State<CalculatorPage> {
                 menuPadding: EdgeInsets.zero, // Flutter 3.19+ 先有；舊版可刪呢行
               ),
             ),
-            child: PopupMenuButton<String>(
+            child: PopupMenuButton<int>(
+              enabled: assets.isNotEmpty, // ⚠️ 空 list 開 menu 會 assert 失敗
               icon: const Icon(Icons.more_vert, color: Colors.black),
               color: Colors.white,
               elevation: 2,
-              surfaceTintColor: Colors.transparent, // 防止 Material3 自動加色
+              surfaceTintColor: Colors.transparent,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
                 side: const BorderSide(color: Colors.black, width: 2),
               ),
-              itemBuilder: (context) =>  [
-                PopupMenuItem<String>(
-                 // value: 'edit_categories',
-                  padding: EdgeInsets.zero,
-                  child: _MenuRow(text: 'Cash', showDivider: true),
-                ),
-                PopupMenuItem<String>(
-                  //value: 'tutorial',
-                  padding: EdgeInsets.zero,
-                  child: _MenuRow(text: 'Bank', showDivider: false),
-                ),
+              itemBuilder: (context) => [
+                for (var i = 0; i < assets.length; i++)
+                  PopupMenuItem<int>(
+                    value: assets[i].id, // 一定要有 value,否則會被當成 cancel
+                    padding: EdgeInsets.zero,
+                    child: _MenuRow(
+                      text: assets[i].name,
+                      showDivider: i < assets.length - 1,
+                      selected: assets[i].id == effectiveAssetId,
+                    ),
+                  ),
               ],
-              onSelected: (value) {
-                switch (value) {
-                  case 'edit_categories':
-                  // Navigator.push(...)
-                    break;
-                  case 'tutorial':
-                  // Navigator.push(...)
-                    break;
-                }
-              },
+              onSelected: (id) => setState(() => _selectedAssetId = id),
             ),
           ),
         ],
@@ -149,7 +150,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
               itemBuilder: (BuildContext context, int index) {
                 final cat = index == 0 ? null : categories[index - 1]; // null = Add 掣
                 final IconData icon =
-                cat == null ? Icons.add : categoryIconData(cat.iconCodePoint);
+                cat == null ? Icons.add : categoryIconData(cat.iconKey);
                 final String label = cat == null ? 'Add' : cat.label;
                 return GestureDetector(
                   onTap: () {
@@ -292,30 +293,10 @@ class _CalculatorPageState extends State<CalculatorPage> {
     );
   }
 
-  /// 計算式 → 數字。語法錯 / 唔完整(例如 "5+")/ 除以 0 → 返回 null
-  double? _evaluate(String expr) {
-    if (expr.isEmpty) return null;
-    try {
-      final text = expr.replaceAll('×', '*').replaceAll('÷', '/');
-      final Expression exp = GrammarParser().parse(text);
-      final num result = RealEvaluator(ContextModel()).evaluate(exp);
-      final value = result.toDouble();
-      if (!value.isFinite) return null;               // 1÷0 → Infinity / NaN
-      return double.parse(value.toStringAsFixed(2));  // ⚠️ 四捨五入兩位小數
-    } catch (_) {
-      return null;
-    }
-  }
-
-  /// 5.0 → "5",5.50 → "5.5"
-  String _fmt(double v) {
-    final s = v.toStringAsFixed(2);
-    return s.contains('.') ? s.replaceFirst(RegExp(r'\.?0+$'), '') : s;
-  }
 
   void equalPressed() {
-    final value = _evaluate(userQuestions);
-    if (value == null) return; // ⚠️ 出錯就靜靜雞唔郁
+    final value = CalculatorLogic.evaluate(userQuestions);   // ← 原本 _evaluate(...)
+    if (value == null) return;
     setState(() {
       finalQuestions = fmtAmount(value);
       userQuestions = finalQuestions;
@@ -323,34 +304,53 @@ class _CalculatorPageState extends State<CalculatorPage> {
   }
 
   Future<void> _savePressed() async {
-    final amount = _evaluate(userQuestions);
-    final categoryId = _selectedCategoryId;
-    if (amount == null || amount <= 0 || categoryId == null) return;
+    if (_saving) return;
 
-    final footnoteText = _footnoteController.text.trim();
-    final footnote = footnoteText.isEmpty ? null : footnoteText;
-    final date =
-    DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
+    final categoryProvider = context.read<CategoryProvider>();
+    final categories = isExpenseSelected
+        ? categoryProvider.activeExpenseCategories
+        : categoryProvider.activeIncomeCategories;
+
+    final draft = CalculatorLogic.buildDraft(
+      expression: userQuestions,
+      date: _selectedDate,
+      isExpense: isExpenseSelected,
+      selectedCategoryId: _selectedCategoryId,
+      availableCategoryIds: [for (final c in categories) c.id],
+      selectedAssetId: _selectedAssetId,
+      defaultAssetId: context.read<AssetProvider>().defaultAssetId,
+      footnoteText: _footnoteController.text,
+    );
+    // ⚠️ null = 算式打錯 / 負數 / 當前類別冇任何分類 → 靜雞雞唔儲
+    if (draft == null) return;
+
     final provider = context.read<TransactionProvider>();
     final editing = widget.editing;
 
-    if (editing == null) {
-      await provider.addTransaction(
-        date: date,
-        amount: amount,
-        isExpense: isExpenseSelected,
-        categoryId: categoryId,
-        footnote: footnote,
-      );
-    } else {
-      await provider.editTransaction(
-        id: editing.id,
-        date: date,
-        amount: amount,
-        isExpense: isExpenseSelected,
-        categoryId: categoryId,
-        footnote: footnote,
-      );
+    _saving = true;
+    try {
+      if (editing == null) {
+        await provider.addTransaction(
+          date: draft.date,
+          amount: draft.amount,
+          isExpense: draft.isExpense,
+          categoryId: draft.categoryId,
+          assetId: draft.assetId,
+          footnote: draft.footnote,
+        );
+      } else {
+        await provider.editTransaction(
+          id: editing.id,
+          date: draft.date,
+          amount: draft.amount,
+          isExpense: draft.isExpense,
+          categoryId: draft.categoryId,
+          assetId: draft.assetId,
+          footnote: draft.footnote,
+        );
+      }
+    } finally {
+      _saving = false;
     }
     if (!mounted) return;
     Navigator.pop(context);
@@ -361,12 +361,17 @@ class _CalculatorPageState extends State<CalculatorPage> {
 class _MenuRow extends StatelessWidget {
   final String text;
   final bool showDivider;
-  const _MenuRow({required this.text, required this.showDivider});
+  final bool selected;
+  const _MenuRow({
+    required this.text,
+    required this.showDivider,
+    this.selected = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 220, // 按你圖入面嘅闊度自己調
+      width: 220,
       padding: const EdgeInsets.symmetric(vertical: 16),
       alignment: Alignment.center,
       decoration: showDivider
@@ -376,12 +381,27 @@ class _MenuRow extends StatelessWidget {
         ),
       )
           : null,
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 18,
-          color: Colors.black,
+      child: SizedBox(
+        width: double.infinity,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: Colors.black,
+              ),
+            ),
+            if (selected)
+              const Positioned(
+                right: 16,
+                child: Icon(Icons.check, size: 20, color: Colors.black),
+              ),
+          ],
         ),
       ),
     );

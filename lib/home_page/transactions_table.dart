@@ -110,7 +110,7 @@ class TransactionsTable extends StatelessWidget {
             children: [
               Icon(category == null
                   ? Icons.grid_view_outlined
-                  : categoryIconData(category.iconCodePoint)),
+                  : categoryIconData(category.iconKey)),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(

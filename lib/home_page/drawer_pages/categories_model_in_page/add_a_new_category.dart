@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bookkeeping/providers/category_provider.dart';
 import 'package:bookkeeping/widgets/selectable_category_icon.dart';
 import 'package:provider/provider.dart';
-
+import 'package:bookkeeping/utils/category_icon.dart';
 
 class CustomCategories extends StatefulWidget {
   final bool isExpense;
@@ -18,14 +18,22 @@ class _CustomCategoriesState extends State<CustomCategories> {
   // State 入面加：
   int? _selectedIconIndex; // 用 index 唔用 codePoint，因為 list 而家有重複 icon，唔會出現一齊被揀中
 
+  bool _saving = false;
+
   Future<void> _confirm() async {
+    if (_saving) return;
     final name = _newCategoryName.text.trim();
-    if (name.isEmpty || _selectedIconIndex == null) return; // ⚠️ 見下面
-    await context.read<CategoryProvider>().addCategory(
-      label: name,
-      iconCodePoint: categoryItems[_selectedIconIndex!].codePoint,
-      isExpense: widget.isExpense,
-    );
+    if (name.isEmpty || _selectedIconIndex == null) return;
+    _saving = true;
+    try {
+      await context.read<CategoryProvider>().addCategory(
+        label: name,
+        iconKey: categoryItems[_selectedIconIndex!],   // ← 原本 categoryItems[...].codePoint
+        isExpense: widget.isExpense,
+      );
+    } finally {
+      _saving = false;
+    }
     if (!mounted) return;
     Navigator.pop(context);
   }
@@ -39,22 +47,10 @@ class _CustomCategoriesState extends State<CustomCategories> {
    super.dispose();
   }
 
-  final List<IconData> categoryItems = [  //遲啲引入整個Icon Library 比User 慢慢揀
-     Icons.restaurant,
-     Icons.directions_transit_sharp,
-     Icons.shopping_bag_outlined,
-     Icons.grid_view_outlined,
-     Icons.grid_view_outlined,
-    Icons.restaurant,
-    Icons.directions_transit_sharp,
-    Icons.shopping_bag_outlined,
-    Icons.grid_view_outlined,
-    Icons.grid_view_outlined,
-    Icons.restaurant,
-    Icons.directions_transit_sharp,
-    Icons.shopping_bag_outlined,
-    Icons.grid_view_outlined,
-    Icons.grid_view_outlined,
+  final List<String> categoryItems = [
+    for (var i = 0; i < 3; i++) ...[
+      'restaurant', 'transit', 'shopping_bag', 'grid_view', 'grid_view',
+    ],
   ];
 
   @override
@@ -141,7 +137,7 @@ class _CustomCategoriesState extends State<CustomCategories> {
                         onTap: () => setState(() => _selectedIconIndex = index),
                         child: Center( // ⚠️ 一定要有 Center,否則 Stack 會撐滿成個格,圓形會跑去格仔右下角而唔係 icon 右下角
                           child: SelectableCategoryIcon(
-                            icon: categoryItems[index],
+                            icon: categoryIconData(categoryItems[index]),
                             size: 32,
                             selected: index == _selectedIconIndex,
                           ),

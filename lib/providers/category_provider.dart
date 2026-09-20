@@ -27,7 +27,7 @@ class CategoryProvider extends ChangeNotifier {
 
   CategoryProvider(this._db) {
     _sub = _db.select(_db.categories).watch().listen((rows) {
-      _categories = rows;
+      _categories = [...rows]..sort((a, b) => a.id.compareTo(b.id)); // ← 原本 = rows
       notifyListeners();
     });
   }
@@ -42,13 +42,13 @@ class CategoryProvider extends ChangeNotifier {
 
   Future<void> addCategory({
     required String label,
-    required int iconCodePoint,
+    required String iconKey,            // ← 原本 int iconCodePoint
     required bool isExpense,
   }) {
     return _db.into(_db.categories).insert(
       CategoriesCompanion.insert(
         label: label,
-        iconCodePoint: iconCodePoint,
+        iconKey: Value(iconKey),        // ← 原本 iconCodePoint: iconCodePoint
         isExpense: isExpense,
       ),
     );
