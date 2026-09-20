@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:drift/drift.dart' show Value;
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:bookkeeping/database/app_database.dart';
 
 class CategoryProvider extends ChangeNotifier {
