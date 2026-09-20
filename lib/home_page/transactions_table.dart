@@ -4,6 +4,9 @@ import 'package:bookkeeping/database/app_database.dart';
 import 'package:bookkeeping/providers/category_provider.dart';
 import 'package:bookkeeping/utils/category_icon.dart';
 import 'package:bookkeeping/utils/formatters.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:bookkeeping/providers/transaction_provider.dart';
+import 'package:bookkeeping/calculator/calculator_page.dart';
 
 class TransactionsTable extends StatelessWidget {
   final DateTime date;
@@ -61,7 +64,7 @@ class TransactionsTable extends StatelessWidget {
                   indent: 10,
                   endIndent: 10,
                 ),
-              _buildRow(entries[i], categoryProvider),
+              _buildRow(context, entries[i], categoryProvider),
             ],
           ],
         ),
@@ -69,36 +72,62 @@ class TransactionsTable extends StatelessWidget {
     );
   }
 
-  Widget _buildRow(TransactionEntry t, CategoryProvider categoryProvider) {
-    final category = categoryProvider.categoryById(t.categoryId); // 封存咗都揾到
-    // 有 footnote 就顯示 footnote,否則顯示分類名(跟你原本註解)
+  Widget _buildRow(BuildContext context, TransactionEntry t,
+      CategoryProvider categoryProvider) {
+    final category = categoryProvider.categoryById(t.categoryId);
     final title = (t.footnote != null && t.footnote!.isNotEmpty)
         ? t.footnote!
         : (category?.label ?? '');
-    final amountText = '\$ ${t.isExpense ? '-' : ''}${fmtAmount(t.amount, grouped: true)}';
+    final amountText =
+        '\$ ${t.isExpense ? '-' : ''}${fmtAmount(t.amount, grouped: true)}';
 
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
+    return Slidable(
+      key: ValueKey(t.id),
+      // endActionPane = 向左滑先會彈出嚟(startActionPane 先係向右滑)
+      endActionPane: ActionPane(
+        motion: const StretchMotion(),
         children: [
-          Icon(category == null
-              ? Icons.grid_view_outlined // ⚠️ 只係 category stream 未載入嗰一瞬間會見到
-              : categoryIconData(category.iconCodePoint)),
-          const SizedBox(width: 4),
-          Expanded(
-            child: Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            amountText,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          SlidableAction(
+            onPressed: (_) =>
+                context.read<TransactionProvider>().deleteTransaction(t.id),
+            icon: Icons.delete,
+            backgroundColor: Colors.red,
           ),
         ],
+      ),
+      // 撳一下 → 跳去 Calculator page(編輯模式)
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => CalculatorPage(editing: t)),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              Icon(category == null
+                  ? Icons.grid_view_outlined
+                  : categoryIconData(category.iconCodePoint)),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                amountText,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

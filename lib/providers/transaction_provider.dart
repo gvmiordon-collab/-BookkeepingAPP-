@@ -74,6 +74,27 @@ class TransactionProvider extends ChangeNotifier {
     return _db.update(_db.transactionEntries).replace(entry);
   }
 
+  /// 編輯一筆交易(Calculator page 編輯模式儲存時用)
+  Future<void> editTransaction({
+    required int id,
+    required DateTime date,
+    required double amount,
+    required bool isExpense,
+    required int categoryId,
+    String? footnote,
+  }) {
+    return _db.update(_db.transactionEntries).replace(
+      TransactionEntry(
+        id: id,
+        date: date,
+        amount: amount,
+        isExpense: isExpense,
+        categoryId: categoryId,
+        footnote: footnote,
+      ),
+    );
+  }
+
   Future<void> deleteTransaction(int id) {
     return (_db.delete(_db.transactionEntries)..where((tbl) => tbl.id.equals(id))).go();
   }

@@ -11,9 +11,11 @@ import 'package:bookkeeping/providers/transaction_provider.dart';
 import 'package:bookkeeping/utils/category_icon.dart';
 import 'package:bookkeeping/home_page/drawer_pages/categories_model_in_page/add_a_new_category.dart';
 import 'package:bookkeeping/utils/formatters.dart';
+import 'package:bookkeeping/database/app_database.dart' show TransactionEntry;
 
 class CalculatorPage extends StatefulWidget {
-  const CalculatorPage({super.key});
+  final TransactionEntry? editing; // null = 新增;有值 = 編輯嗰筆
+  const CalculatorPage({super.key, this.editing});
 
   @override
   State<CalculatorPage> createState() => _CalculatorPageState();
@@ -26,6 +28,20 @@ class _CalculatorPageState extends State<CalculatorPage> {
   DateTime _selectedDate = DateTime.now(); // ⚠️ DateButton 未駁,暫時用今日
 
   final TextEditingController _footnoteController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    final e = widget.editing;
+    if (e != null) {
+      isExpenseSelected = e.isExpense;
+      _selectedCategoryId = e.categoryId;
+      _selectedDate = e.date;
+      userQuestions = fmtAmount(e.amount);
+      finalQuestions = userQuestions;
+      _footnoteController.text = e.footnote ?? '';
+    }
+  }
 
   @override
   void dispose() {
@@ -65,6 +81,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
         ),
         // 2. 將按鈕放入 title
         title: ExpenseIncomeButton(
+          initialIsExpense: isExpenseSelected,
           onChanged: (v) => setState(() {
             isExpenseSelected = v;
             _selectedCategoryId = null; // 切換後 list 唔同咗,清走已揀分類
@@ -306,20 +323,37 @@ class _CalculatorPageState extends State<CalculatorPage> {
   }
 
   Future<void> _savePressed() async {
-    final amount = _evaluate(userQuestions); // ⚠️ 未撳 = 直接撳 OK 都會自動計
+    final amount = _evaluate(userQuestions);
     final categoryId = _selectedCategoryId;
-    if (amount == null || amount <= 0 || categoryId == null) return; // ⚠️
+    if (amount == null || amount <= 0 || categoryId == null) return;
 
-    final footnote = _footnoteController.text.trim();
-    await context.read<TransactionProvider>().addTransaction(
-      date: DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day),
-      amount: amount,
-      isExpense: isExpenseSelected,
-      categoryId: categoryId,
-      footnote: footnote.isEmpty ? null : footnote,
-    );
+    final footnoteText = _footnoteController.text.trim();
+    final footnote = footnoteText.isEmpty ? null : footnoteText;
+    final date =
+    DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
+    final provider = context.read<TransactionProvider>();
+    final editing = widget.editing;
+
+    if (editing == null) {
+      await provider.addTransaction(
+        date: date,
+        amount: amount,
+        isExpense: isExpenseSelected,
+        categoryId: categoryId,
+        footnote: footnote,
+      );
+    } else {
+      await provider.editTransaction(
+        id: editing.id,
+        date: date,
+        amount: amount,
+        isExpense: isExpenseSelected,
+        categoryId: categoryId,
+        footnote: footnote,
+      );
+    }
     if (!mounted) return;
-    Navigator.pop(context); // ⚠️ 儲存完返 Home
+    Navigator.pop(context);
   }
 }
 
