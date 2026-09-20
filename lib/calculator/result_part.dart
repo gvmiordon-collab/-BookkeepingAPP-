@@ -6,12 +6,13 @@ import 'package:bookkeeping/calculator/footnote_model.dart';
 class ResultPart extends StatefulWidget {
   final String userQuestions;
   final String finalQuestions;
+  final TextEditingController footnoteController; // ➕ 由 CalculatorPage 傳入
 
   const ResultPart({
     super.key,
     required this.userQuestions,
     required this.finalQuestions,
-
+    required this.footnoteController, // ➕
   });
 
   @override
@@ -20,15 +21,8 @@ class ResultPart extends StatefulWidget {
 
 class _ResultPartState extends State<ResultPart> {
 
-  final TextEditingController _reminderController = TextEditingController();
-
   var reminder = 'reminder' ;
 
-  @override
-  void dispose() {
-    _reminderController.dispose();
-    super.dispose();
-  }
 
 
   final List<String> footnote =[  //呢度所出現的footnote 是由textfield 嗰度有填寫過並且User按下了(ok) button 的footnote
@@ -69,7 +63,7 @@ class _ResultPartState extends State<ResultPart> {
                 Expanded(
                   flex: 1,
                   child: TextField(
-                    controller: _reminderController,
+                    controller: widget.footnoteController,
                     decoration: const InputDecoration(
                       hintText: 'footnote',
                       isDense: true,
