@@ -1,6 +1,6 @@
 import 'package:bookkeeping/home_page/drawer_pages/fixed_item/fixed_items_model.dart';
 import 'package:flutter/material.dart';
-import 'package:bookkeeping/home_page/drawer_pages/fixed_item/create_a_new_fixed_item.dart';
+import 'package:bookkeeping/home_page/drawer_pages/fixed_item/add_a_new_fixed_item.dart';
 
 class FixedItemPages extends StatefulWidget {
   const FixedItemPages({super.key});

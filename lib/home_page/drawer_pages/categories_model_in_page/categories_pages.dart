@@ -17,6 +17,7 @@ class _CategoriesPagesState extends State<CategoriesPages> {
 
 // State 入面：刪走成個 categoryItems list，改成
   bool _isExpense = true;
+  bool _editMode = false;
 
   @override
   Widget build(BuildContext context) {
@@ -31,8 +32,8 @@ class _CategoriesPagesState extends State<CategoriesPages> {
 
         actions: [
           IconButton(
-              onPressed: () {},
-              icon: Icon(Icons.edit_sharp)
+            onPressed: () => setState(() => _editMode = !_editMode),   // ← 原本 () {}
+            icon: Icon(_editMode ? Icons.check : Icons.edit_sharp),    // ← 原本 Icons.edit_sharp
           ),
         ],
 
@@ -74,30 +75,12 @@ class _CategoriesPagesState extends State<CategoriesPages> {
                 ),
                 itemBuilder: (BuildContext context, int index) {
                   final item = items[index];
-                  return Container(/*
-                    在按了上方的 icon: Icon(Icons.edit_sharp)， 這個Container會有個用stack的widget(樣式如下) 堆疊係個Border 的左上角
-                                Container(
-              decoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.circular(30,)
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(2.0),
-                child: Icon(
-                    Icons.delete_rounded,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-                     */
+                  final cell = Container(
                     decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.black,
-                        width: 2.0,
-                      ),
+                      border: Border.all(color: Colors.black, width: 2.0),
                       borderRadius: BorderRadiusGeometry.circular(10),
                     ),
-                    child: Padding( 
+                    child: Padding(
                       padding: const EdgeInsets.all(15.0),
                       child: Column(
                         children: [
@@ -115,6 +98,33 @@ class _CategoriesPagesState extends State<CategoriesPages> {
                       ),
                     ),
                   );
+
+                  return Stack(
+                    fit: StackFit.expand, // 冇呢行,格仔會縮到貼住內容
+                    children: [
+                      cell,
+                      if (_editMode)
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () =>
+                                context.read<CategoryProvider>().deleteCategory(item.id),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              child: const Padding(
+                                padding: EdgeInsets.all(2.0),
+                                child: Icon(Icons.delete_rounded, color: Colors.white, size: 18),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
                 },
               ),
             ),
@@ -122,7 +132,8 @@ class _CategoriesPagesState extends State<CategoriesPages> {
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked, //在按了上方的 icon: Icon(Icons.edit_sharp) 才會出現
-      floatingActionButton: Padding(
+      floatingActionButton: _editMode
+          ? Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
@@ -151,7 +162,8 @@ class _CategoriesPagesState extends State<CategoriesPages> {
               ),
             ),
         ),
-      ),
+      )
+          : null,
     );
   }
 }

@@ -27,9 +27,14 @@ class _AssetCardPagesState extends State<AssetCardPages> {
       body: ListView.builder(
         itemCount: cards.length,
         itemBuilder: (BuildContext context, int index) {
+          final c = cards[index];                                         // ← 加
           return AssetsCard(
-            assetNamed: cards[index].name,
-            assetAmount: fmtAmount(cards[index].balance, grouped: true),
+            assetNamed: c.name,
+            assetAmount: fmtAmount(c.balance, grouped: true),
+            id: c.id,                                                      // ← 加
+            onDelete: c.id == null                                         // ← 加
+                ? null
+                : () => context.read<AssetProvider>().deleteAsset(c.id!),  // ← 加
           );
         },
       ),

@@ -74,11 +74,11 @@ class AssetProvider extends ChangeNotifier {
       _round2(_assets.fold(0.0, (sum, a) => sum + balanceOf(a.id)));
 
   /// Home / Asset Cards 頁用:第一張 Total Balance,之後係各個未封存帳戶
-  List<({String name, double balance})> get displayCards => [
-    (name: 'Total Balance', balance: totalBalance),
-    for (final a in activeAssets) (name: a.name, balance: balanceOf(a.id)),
+  /// id = null 代表 Total Balance(計出嚟嘅,唔係 DB row,唔可以刪)
+  List<({int? id, String name, double balance})> get displayCards => [   // ← 加 int? id
+    (id: null, name: 'Total Balance', balance: totalBalance),            // ← 加 id: null
+    for (final a in activeAssets) (id: a.id, name: a.name, balance: balanceOf(a.id)),  // ← 加 id: a.id
   ];
-
   // ---------- CRUD ----------
 
   Future<void> addAsset({
