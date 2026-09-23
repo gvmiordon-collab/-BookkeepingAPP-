@@ -44,6 +44,29 @@ class TransactionEntries extends Table {
 // 已 confirm:唔需要 createdAt / updatedAt
 }
 
+@DataClassName('FixedItem')
+class FixedItems extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get label => text()();
+  RealColumn get amount => real()();
+  BoolColumn get isExpense => boolean()();
+  IntColumn get categoryId => integer().references(Categories, #id)();
+  IntColumn get assetId => integer().nullable().references(Assets, #id)();
+  // 0 = weekly, 1 = monthly(Annually 喺畫面度仲鎖緊,呢度未做呢個 case)
+  IntColumn get frequencyType => integer()();
+  // weekly: 1~7(Mon~Sun)逗號分隔;monthly: 1~31 逗號分隔
+  TextColumn get scheduleDays => text()();
+  // null = Unlimited,有數就係生成上限次數
+  IntColumn get repeatedTimes => integer().nullable()();
+  IntColumn get occurrenceCount => integer().withDefault(const Constant(0))();
+  // 由邊一日開始計(冇畫面揀,default = 新增嗰刻)
+  DateTimeColumn get startDate => dateTime()();
+  // 自動生成計到邊一日(null = 未生成過)
+  DateTimeColumn get lastGeneratedDate => dateTime().nullable()();
+  // 即係畫面嗰個 Switch
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
+}
+
 // ---------- Database ----------
 
 @DriftDatabase(tables: [Categories, TransactionEntries, Assets])
@@ -81,7 +104,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -114,6 +137,9 @@ class AppDatabase extends _$AppDatabase {
         }
         // ③ 刪走舊欄(需要 SQLite ≥ 3.35)
         await m.dropColumn(categories, 'icon_code_point');
+      }
+      if (from < 5) { // ← 加
+        await m.createTable(fixedItems);
       }
     },
   );

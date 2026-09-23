@@ -1,48 +1,35 @@
 import 'package:flutter/material.dart';
 
-/// Which tab of the repeat schedule is active.
 enum RepeatFrequency { weekly, monthly, annually }
 
-/// The result handed back when the user taps the checkmark.
 class RepeatScheduleResult {
   final RepeatFrequency frequency;
-  final Set<int> selectedWeekdays; // 1 = Mon ... 7 = Sun
-  final Set<int> selectedMonthDays; // 1 ... 31
+  final Set<int> selectedWeekdays;
+  final Set<int> selectedMonthDays;
+  final DateTime? annualDate; // ← 加
 
   const RepeatScheduleResult({
     required this.frequency,
     required this.selectedWeekdays,
     required this.selectedMonthDays,
+    this.annualDate, // ← 加
   });
 }
 
-/// Recreates the "Custom repeat schedule" sheet:
-/// - segmented Weekly / Monthly / Annually control at the top
-/// - Weekly: Mon–Sun rows + a "Select all" shortcut
-/// - Monthly: Day 1–31 rows
-/// - Annually: premium-locked placeholder (shown with the diamond icon,
-///   since the screenshots don't reveal its unlocked content)
-///
-/// Usage:
-///   final result = await showModalBottomSheet<RepeatScheduleResult>(
-///     context: context,
-///     isScrollControlled: true,
-///     backgroundColor: Colors.transparent,
-///     builder: (_) => const CustomRepeatScheduleSheet(),
-///   );
 class CustomRepeatScheduleSheet extends StatefulWidget {
   final RepeatFrequency initialFrequency;
   final Set<int> initialWeekdays;
   final Set<int> initialMonthDays;
-  final bool isPremiumUser;
+  final DateTime? initialAnnualDate; // ← 加
 
   const CustomRepeatScheduleSheet({
     super.key,
     this.initialFrequency = RepeatFrequency.weekly,
     this.initialWeekdays = const {},
     this.initialMonthDays = const {},
-    this.isPremiumUser = false,
+    this.initialAnnualDate, // ← 加
   });
+  // ← 刪:isPremiumUser 唔再需要,Annually 而家一律解鎖
 
   @override
   State<CustomRepeatScheduleSheet> createState() =>
@@ -58,6 +45,7 @@ class _CustomRepeatScheduleSheetState
   late RepeatFrequency _frequency;
   late Set<int> _selectedWeekdays;
   late Set<int> _selectedMonthDays;
+  late DateTime? _selectedAnnualDate; // ← 加
 
   @override
   void initState() {
@@ -65,6 +53,7 @@ class _CustomRepeatScheduleSheetState
     _frequency = widget.initialFrequency;
     _selectedWeekdays = {...widget.initialWeekdays};
     _selectedMonthDays = {...widget.initialMonthDays};
+    _selectedAnnualDate = widget.initialAnnualDate; // ← 加
   }
 
   void _confirm() {
@@ -73,6 +62,7 @@ class _CustomRepeatScheduleSheetState
         frequency: _frequency,
         selectedWeekdays: _selectedWeekdays,
         selectedMonthDays: _selectedMonthDays,
+        annualDate: _selectedAnnualDate, // ← 加
       ),
     );
   }
@@ -80,9 +70,7 @@ class _CustomRepeatScheduleSheetState
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.85,
-      ),
+      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(28),
@@ -100,7 +88,6 @@ class _CustomRepeatScheduleSheetState
     );
   }
 
-  // Close icon — title — confirm checkmark, with a divider underneath.
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -117,10 +104,7 @@ class _CustomRepeatScheduleSheetState
           ),
           const SizedBox(width: 8),
           const Expanded(
-            child: Text(
-              'Custom repeat schedule',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
+            child: Text('Custom repeat schedule', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           ),
           IconButton(
             icon: const Icon(Icons.check, size: 28),
@@ -133,7 +117,6 @@ class _CustomRepeatScheduleSheetState
     );
   }
 
-  // Weekly / Monthly / Annually segmented toggle.
   Widget _buildSegmentedControl() {
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -147,16 +130,14 @@ class _CustomRepeatScheduleSheetState
           children: [
             _segment('Weekly', RepeatFrequency.weekly),
             _segment('Monthly', RepeatFrequency.monthly),
-            _segment('Annually', RepeatFrequency.annually,
-                icon: Icons.diamond_outlined, locked: !widget.isPremiumUser),
+            _segment('Annually', RepeatFrequency.annually), // ← 改:原本仲有 icon: diamond, locked: true
           ],
         ),
       ),
     );
   }
 
-  Widget _segment(String label, RepeatFrequency value,
-      {IconData? icon, bool locked = false}) {
+  Widget _segment(String label, RepeatFrequency value) { // ← 改:刪走 icon/locked 兩個參數
     final selected = _frequency == value;
     return Expanded(
       child: GestureDetector(
@@ -164,19 +145,8 @@ class _CustomRepeatScheduleSheetState
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 14),
           color: selected ? _selectedSegmentColor : Colors.white,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (icon != null) ...[
-                Icon(icon, size: 18),
-                const SizedBox(width: 4),
-              ],
-              Text(
-                label,
-                style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ],
+          child: Center(
+            child: Text(label, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           ),
         ),
       ),
@@ -190,7 +160,7 @@ class _CustomRepeatScheduleSheetState
       case RepeatFrequency.monthly:
         return _buildMonthlyList();
       case RepeatFrequency.annually:
-        return _buildAnnuallyLocked();
+        return _buildAnnuallyCalendar(); // ← 改:原本 _buildAnnuallyLocked()
     }
   }
 
@@ -205,14 +175,8 @@ class _CustomRepeatScheduleSheetState
           }),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Text(
-              'Select all',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue.shade600,
-              ),
-            ),
+            child: Text('Select all',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue.shade600)),
           ),
         ),
         const SizedBox(height: 4),
@@ -222,9 +186,7 @@ class _CustomRepeatScheduleSheetState
             selected: _selectedWeekdays.contains(i + 1),
             onTap: () => setState(() {
               final day = i + 1;
-              _selectedWeekdays.contains(day)
-                  ? _selectedWeekdays.remove(day)
-                  : _selectedWeekdays.add(day);
+              _selectedWeekdays.contains(day) ? _selectedWeekdays.remove(day) : _selectedWeekdays.add(day);
             }),
           ),
       ],
@@ -240,42 +202,24 @@ class _CustomRepeatScheduleSheetState
             label: 'Day $day',
             selected: _selectedMonthDays.contains(day),
             onTap: () => setState(() {
-              _selectedMonthDays.contains(day)
-                  ? _selectedMonthDays.remove(day)
-                  : _selectedMonthDays.add(day);
+              _selectedMonthDays.contains(day) ? _selectedMonthDays.remove(day) : _selectedMonthDays.add(day);
             }),
           ),
       ],
     );
   }
 
-  Widget _buildAnnuallyLocked() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.diamond_outlined, size: 40),
-            const SizedBox(height: 12),
-            const Text(
-              'Annual scheduling is a premium feature',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-      ),
+  // ← 改:原本 _buildAnnuallyLocked(),而家換成真係月曆
+  Widget _buildAnnuallyCalendar() {
+    return CalendarDatePicker(
+      initialDate: _selectedAnnualDate ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+      onDateChanged: (d) => setState(() => _selectedAnnualDate = d),
     );
   }
 
-  // A single day/weekday row. Selected = filled orange pill + check.
-  // Unselected = plain bold text, no background.
-  Widget _selectableRow({
-    required String label,
-    required bool selected,
-    required VoidCallback onTap,
-  }) {
+  Widget _selectableRow({required String label, required bool selected, required VoidCallback onTap}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: GestureDetector(
@@ -286,22 +230,12 @@ class _CustomRepeatScheduleSheetState
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
             color: selected ? _selectedPillColor : Colors.transparent,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(30),
-              topRight: Radius.circular(30),
-            ),
+            borderRadius: const BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
           ),
           child: Row(
             children: [
-              Expanded(
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-              ),
-              if (selected)
-                const Icon(Icons.check, size: 24, color: Colors.black),
+              Expanded(child: Text(label, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+              if (selected) const Icon(Icons.check, size: 24, color: Colors.black),
             ],
           ),
         ),
