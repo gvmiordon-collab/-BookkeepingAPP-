@@ -13,6 +13,7 @@ import 'package:provider/provider.dart';
 import 'package:bookkeeping/providers/transaction_provider.dart';
 import 'package:bookkeeping/providers/asset_provider.dart';
 import 'package:bookkeeping/utils/formatters.dart';
+import 'package:bookkeeping/home_page/drawer_pages/P&L_in_page/profit_and_loss_statement.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -31,6 +32,7 @@ class _HomePageState extends State<HomePage> {
   ];
 
   final List<String> buttonText =[
+    'P&L'
     'Asset Cards',
     'Categories',
     'Fixed items',
@@ -121,12 +123,17 @@ class _HomePageState extends State<HomePage> {
                       return DrawerButtons(
                         buttonText: buttonText[index],
                         onTap: () {
-                          if (index == 0) { //Asset Card
+                          if (index == 0) { //Profit and Loss Statement
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => ProfitAndLossStatement()),
+                            );
+                          } else if (index == 1) { //Asset Card
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => AssetCardPages()),
                             );
-                          } else if (index == 1) { //Categories
+                          } else if (index == 2) { //Categories
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => CategoriesPages()),

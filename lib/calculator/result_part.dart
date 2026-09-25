@@ -1,73 +1,64 @@
-
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:provider/provider.dart';
 import 'package:bookkeeping/calculator/footnote_model.dart';
+import 'package:bookkeeping/providers/footnote_provider.dart';
+import 'package:bookkeeping/database/app_database.dart' show FootnoteTag;
 
-class ResultPart extends StatefulWidget {
+// ← 改:StatefulWidget → StatelessWidget,原本嗰個 state(假 footnote list)已經冚咗俾 FootnoteProvider
+class ResultPart extends StatelessWidget {
   final String userQuestions;
   final String finalQuestions;
-  final TextEditingController footnoteController; // ➕ 由 CalculatorPage 傳入
+  final TextEditingController footnoteController;
 
   const ResultPart({
     super.key,
     required this.userQuestions,
     required this.finalQuestions,
-    required this.footnoteController, // ➕
+    required this.footnoteController,
   });
 
-  @override
-  State<ResultPart> createState() => _ResultPartState();
-}
-
-class _ResultPartState extends State<ResultPart> {
-
-  var reminder = 'reminder' ;
-
-
-
-  final List<String> footnote =[  //呢度所出現的footnote 是由textfield 嗰度有填寫過並且User按下了(ok) button 的footnote
-    'FOOD',                       //所有footnote 都是按下了其對應的名稱後，會出現在textfield，方便User 唔需要再寫相同的footnote
-    'McDonald',
-    'one',
-    'two',
-    'three',
-
-  ];
+  void _openMoreSheet(BuildContext context) {
+    final footnoteProvider = context.read<FootnoteProvider>();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => ChangeNotifierProvider.value(
+        value: footnoteProvider,
+        child: _FootnoteManageSheet(footnoteController: footnoteController),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final recent = context.watch<FootnoteProvider>().recent;
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
-        //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Expanded(
             flex: 3,
             child: Row(
-              //crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
-                  flex: 4, // 金額呢邊佔多啲空間
+                  flex: 4,
                   child: AutoSizeText(
-                    '\$ ${widget.userQuestions}',
-                    style: const TextStyle(
-                      fontSize: 25,        // 未縮之前嘅「原本」大小
-                      fontWeight: FontWeight.bold,
-                    ),
+                    '\$ $userQuestions',
+                    style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                     maxLines: 1,
-                    minFontSize: 14,       // ← 呢個就係「最細」嘅下限，自己試到岩為止
-                    overflow: TextOverflow.ellipsis, // 就算到咗下限都仲塞唔落,咁就用...代替
+                    minFontSize: 14,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   flex: 1,
                   child: TextField(
-                    controller: widget.footnoteController,
-                    decoration: const InputDecoration(
-                      hintText: 'footnote',
-                      isDense: true,
-                    ),
+                    controller: footnoteController,
+                    decoration: const InputDecoration(hintText: 'footnote', isDense: true),
                   ),
                 ),
               ],
@@ -76,88 +67,131 @@ class _ResultPartState extends State<ResultPart> {
           Expanded(
             flex: 2,
             child: ListView.builder(
-              scrollDirection: Axis.horizontal,   //呢度最多放5個最近使用過的footnote，但唔計More
-              // 💡 總數加 1，用來放置最後那個特別的 footnote
-              itemCount: footnote.length + 1,
+              scrollDirection: Axis.horizontal,
+              itemCount: recent.length + 1,
               itemBuilder: (BuildContext context, int index) {
-                // 💡 如果 index 等於原本列表的長度，代表到了最後一個位置
-                if (index == footnote.length) {
-                  // 這裡回傳你「特地設計」的 Widget
+                if (index == recent.length) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     child: GestureDetector(
-                      onTap: () {
-                        // 這裡可以寫點擊這個特別按鈕後的動作（例如：新增標籤）
-                        showModalBottomSheet(
-                            context: context,
-                            builder: (BuildContext context) {
-                            return Container(
-                              
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(30)
-                              ),
-                              child: ListView.builder(
-                                itemCount: footnote.length,
-                                  itemBuilder: (BuildContext context, int index){
-                                return Padding(
-                                  padding:  EdgeInsets.all(20),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text(
-                                          'footnote',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      ),
-                                      const Divider(
-                                        color: Colors.grey,
-                                        height: 1, // 控制分界線佔用的空間高度
-                                      ),
-                                    ],
-                                  ),
-
-                                );
-                              },
-                              ),
-                            );
-                            }
-                            );
-                      },
+                      onTap: () => _openMoreSheet(context),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.grey[200], // 換個特別的顏色
+                          color: Colors.grey[200],
                           borderRadius: BorderRadius.circular(20),
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              'More',
-                              style: TextStyle(
-                              ),
-                            ),
-                            Icon(Icons.mode_edit_outline_outlined, size: 16,), // 加個 + 號圖標
+                            Text('More'),
+                            Icon(Icons.mode_edit_outline_outlined, size: 16),
                           ],
                         ),
                       ),
                     ),
                   );
                 }
-                // 💡 其他一般情況，依然回傳原本的 FootnoteModel
-                return FootnoteModel(footnote: footnote[index]);
+                final tag = recent[index];
+                return FootnoteModel(
+                  footnote: tag.label,
+                  onTap: () => footnoteController.text = tag.label,   // ← 加:撳落去填入 textfield
+                );
               },
             ),
           ),
-
-
         ],
+      ),
+    );
+  }
+}
+
+/// More bottom sheet 本體 —— 抽做獨立 StatefulWidget,因為要自己嘅 edit-mode 開關 state
+class _FootnoteManageSheet extends StatefulWidget {
+  final TextEditingController footnoteController;
+  const _FootnoteManageSheet({required this.footnoteController});
+
+  @override
+  State<_FootnoteManageSheet> createState() => _FootnoteManageSheetState();
+}
+
+class _FootnoteManageSheetState extends State<_FootnoteManageSheet> {
+  bool _editMode = false;   // ⚠️ 撳 pencil 掣 → 入編輯模式,每行右邊有刪除掣(跟 Categories 頁個 pattern)
+
+  @override
+  Widget build(BuildContext context) {
+    final all = context.watch<FootnoteProvider>().all;
+
+    return FractionallySizedBox(
+      heightFactor: 0.6,
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24.0),
+            topRight: Radius.circular(24.0),
+          ),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            Container(
+              width: 40,
+              height: 5,
+              decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(10)),
+            ),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox(width: 24),
+                  const Text('More footnote.',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black)),
+                  IconButton(
+                    icon: Icon(_editMode ? Icons.check : Icons.mode_edit_outline_outlined, size: 20),
+                    onPressed: () => setState(() => _editMode = !_editMode),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(color: Colors.black, height: 1, thickness: 1.5),
+            Expanded(
+              child: all.isEmpty
+                  ? const Center(child: Text('未有 footnote', style: TextStyle(color: Colors.black38)))
+                  : ListView.builder(
+                itemCount: all.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final FootnoteTag tag = all[index];
+                  return Column(
+                    key: ValueKey(tag.id),
+                    children: [
+                      ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                        title: Text(tag.label, style: const TextStyle(fontSize: 18, color: Colors.black87)),
+                        trailing: _editMode
+                            ? IconButton(
+                          icon: const Icon(Icons.delete_rounded, color: Colors.red),
+                          onPressed: () =>
+                              context.read<FootnoteProvider>().deleteFootnote(tag.id),
+                        )
+                            : null,
+                        onTap: _editMode
+                            ? null
+                            : () {
+                          widget.footnoteController.text = tag.label;
+                          Navigator.pop(context);
+                        },
+                      ),
+                      Divider(color: Colors.grey[300], height: 1, thickness: 1),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

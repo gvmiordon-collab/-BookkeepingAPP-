@@ -67,9 +67,16 @@ class FixedItems extends Table {
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
 }
 
+@DataClassName('FootnoteTag')                       // ← 加成個 class,擺喺 FixedItems table 後面
+class Footnotes extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get label => text()();
+  DateTimeColumn get lastUsedAt => dateTime()();
+}
+
 // ---------- Database ----------
 
-@DriftDatabase(tables: [Categories, TransactionEntries, Assets])
+@DriftDatabase(tables: [Categories, TransactionEntries, Assets, FixedItems, Footnotes])
 class AppDatabase extends _$AppDatabase {
 
   Future<void> _seedDefaultCategories() async {
@@ -104,7 +111,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -140,6 +147,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 5) { // ← 加
         await m.createTable(fixedItems);
+      }
+      if (from < 6) {                     // ← 加
+        await m.createTable(footnotes);
       }
     },
   );

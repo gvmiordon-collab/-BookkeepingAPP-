@@ -6,6 +6,7 @@ import 'package:bookkeeping/providers/category_provider.dart';
 import 'package:bookkeeping/providers/transaction_provider.dart';
 import 'package:bookkeeping/providers/asset_provider.dart';   // ← import
 import 'package:bookkeeping/providers/fixed_item_provider.dart';
+import 'package:bookkeeping/providers/footnote_provider.dart';   // ← 加
 
 void main() {
   runApp(MyApp()); // 由 const MyApp() 改為 MyApp(),因為下面加咗個非 const field
@@ -25,6 +26,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => TransactionProvider(_db)),
         ChangeNotifierProvider(create: (_) => AssetProvider(_db)),
         ChangeNotifierProvider(create: (_) => FixedItemProvider(_db)),
+        ChangeNotifierProvider(create: (_) => FootnoteProvider(_db)),
       ],
       child: MaterialApp(
         home: HomePage(),

@@ -38,42 +38,44 @@ class TestPage extends StatelessWidget {
       ),
     ];
 
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          PieChart(
-            PieChartData(
-              sections: sections,
-              sectionsSpace: 2,
-              // 呢個數值愈大，中間個窿愈大 —— 想整到成張圖好似"轉盤"咁就靠佢
-              centerSpaceRadius: size * 0.32,
-              startDegreeOffset: -90, // 由12點鐘方向開始畫
-              borderData: FlBorderData(show: false),
+    return Scaffold(
+      appBar: AppBar(),
+      body: SizedBox(
+        width: size,
+        height: size,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            PieChart(
+              PieChartData(
+                sections: sections,
+                sectionsSpace: 2,
+                // 呢個數值愈大，中間個窿愈大 —— 想整到成張圖好似"轉盤"咁就靠佢
+                centerSpaceRadius: size * 0.32,
+                startDegreeOffset: -90, // 由12點鐘方向開始畫
+                borderData: FlBorderData(show: false),
+              ),
             ),
-          ),
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Text('Balance', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  SizedBox(width: 4),
-                  Icon(Icons.visibility_outlined, size: 16),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '\$${balance.toStringAsFixed(1)}',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ],
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Text('Balance', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '\$${balance.toStringAsFixed(1)}',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

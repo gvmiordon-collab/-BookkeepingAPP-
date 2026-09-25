@@ -13,7 +13,7 @@ import 'package:bookkeeping/utils/formatters.dart';
 import 'package:bookkeeping/database/app_database.dart' show TransactionEntry;
 import 'package:bookkeeping/providers/asset_provider.dart';
 import 'package:bookkeeping/calculator/calculator_logic.dart';   // ← 加
-
+import 'package:bookkeeping/providers/footnote_provider.dart';   // ← 加
 
 class CalculatorPage extends StatefulWidget {
   final TransactionEntry? editing; // null = 新增;有值 = 編輯嗰筆
@@ -349,6 +349,9 @@ class _CalculatorPageState extends State<CalculatorPage> {
           footnote: draft.footnote,
         );
       }
+      if (draft.footnote != null) {                                          // ← 加
+        await context.read<FootnoteProvider>().recordUsage(draft.footnote!);  // ← 加
+      }                                                                       // ← 加
     } finally {
       _saving = false;
     }
