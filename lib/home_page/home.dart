@@ -13,7 +13,7 @@ import 'package:provider/provider.dart';
 import 'package:bookkeeping/providers/transaction_provider.dart';
 import 'package:bookkeeping/providers/asset_provider.dart';
 import 'package:bookkeeping/utils/formatters.dart';
-import 'package:bookkeeping/home_page/drawer_pages/P&L_in_page/profit_and_loss_statement.dart';
+import 'package:bookkeeping/home_page/drawer_pages/P&L_in_page/DetailListItem/profit_and_loss_statement.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage> {
   ];
 
   final List<String> buttonText =[
-    'P&L'
+    'P&L',
     'Asset Cards',
     'Categories',
     'Fixed items',
@@ -123,35 +123,30 @@ class _HomePageState extends State<HomePage> {
                       return DrawerButtons(
                         buttonText: buttonText[index],
                         onTap: () {
-                          if (index == 0) { //Profit and Loss Statement
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => ProfitAndLossStatement()),
-                            );
-                          } else if (index == 1) { //Asset Card
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => AssetCardPages()),
-                            );
-                          } else if (index == 2) { //Categories
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => CategoriesPages()),
-                            );
-                          } else if (index == 2) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => FixedItemPages()),
-                            );
-                          } else if (index == 4) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => TestPage(
-                                expense: 100,
-                                income: 200,
-                                balance: 300,
-                              )),
-                            );
+                          switch (index) {
+                            case 0: // P&L
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => ProfitAndLossStatement()));
+                              break;
+                            case 1: // Asset Cards
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => AssetCardPages()));
+                              break;
+                            case 2: // Categories
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => CategoriesPages()));
+                              break;
+                            case 3: // Fixed items
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => FixedItemPages()));
+                              break;
+                            case 4: // History
+                              //Navigator.push(context, MaterialPageRoute(builder: (context) => HistoryPage()));
+                              break;
+                            case 5: // Test Page
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => TestPage(expense: 100, income: 200, balance: 300),
+                                ),
+                              );
+                              break;
                           }
                         },
                       );
