@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:bookkeeping/database/app_database.dart';
+import 'package:bookkeeping/utils/category_color.dart'; // ← 加
+
 
 class CategoryProvider extends ChangeNotifier {
   final AppDatabase _db;
@@ -45,11 +47,17 @@ class CategoryProvider extends ChangeNotifier {
     required String iconKey,            // ← 原本 int iconCodePoint
     required bool isExpense,
   }) {
+    // ← 加:攞返同類型(Expense 或 Income)現有幾多個 category,mod 色板長度自動派色
+    final sameTypeCount = _categories.where((c) => c.isExpense == isExpense).length;
+    final palette = isExpense ? kExpenseCategoryColors : kIncomeCategoryColors;
+    final colorIndex = sameTypeCount % palette.length;
+
     return _db.into(_db.categories).insert(
       CategoriesCompanion.insert(
         label: label,
         iconKey: Value(iconKey),        // ← 原本 iconCodePoint: iconCodePoint
         isExpense: isExpense,
+        //colorIndex: Value(colorIndex), // ← 加
       ),
     );
   }

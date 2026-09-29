@@ -7,12 +7,18 @@ class ExpenseBarScreen extends StatelessWidget {
   final VoidCallback? onToggle;
   final int timeFilterIndex; // ← 加
   final ValueChanged<int> onTimeFilterChanged; // ← 加
+  final String dateText; // ← 加
+  final VoidCallback onPrevious; // ← 加
+  final VoidCallback onNext; // ← 加
 
   const ExpenseBarScreen({
     super.key,
     this.onToggle,
     required this.timeFilterIndex,
     required this.onTimeFilterChanged,
+    required this.dateText, // ← 加
+    required this.onPrevious, // ← 加
+    required this.onNext, // ← 加
   });
 
   @override
@@ -25,9 +31,9 @@ class ExpenseBarScreen extends StatelessWidget {
           selectedColor: kYellow,
         ),
         DateCurrencySelector(
-          dateText: '2026',
-          onPrevious: () {},
-          onNext: () {},
+          dateText: dateText, // ← 改:原本寫死 '2026'
+          onPrevious: onPrevious, // ← 改:原本空 () {}
+          onNext: onNext, // ← 改
         ),
         Align(
           alignment: Alignment.centerRight,

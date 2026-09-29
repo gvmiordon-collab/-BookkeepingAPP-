@@ -18,6 +18,7 @@ class Categories extends Table {
   // 同時 key 對唔到 map 嗰陣都會 fallback 去呢個。
   TextColumn get iconKey =>
       text().withDefault(const Constant(kDefaultCategoryIconKey))();
+  IntColumn get colorIndex => integer().withDefault(const Constant(0))(); // ← 加
   BoolColumn get isExpense => boolean()();     // 呢個 category 用喺邊邊(expense/income)
   // 刪除分類但仍有交易用緊時,唔真刪,淨係封存
   BoolColumn get isArchived => boolean().withDefault(const Constant(false))();
@@ -80,14 +81,14 @@ class Footnotes extends Table {
 class AppDatabase extends _$AppDatabase {
 
   Future<void> _seedDefaultCategories() async {
-    // (label, iconKey, isExpense)
-    final defaults = <(String, String, bool)>[
-      ('Food', 'restaurant', true),
-      ('Transportation', 'transit', true),
-      ('Snack', 'shopping_bag', true),
-      ('other', 'grid_view', true),
-      ('Salary', 'payments', false),
-      ('other', 'grid_view', false),
+    // (label, iconKey, isExpense, colorIndex)
+    final defaults = <(String, String, bool, int)>[
+      ('Food', 'restaurant', true, 0),
+      ('Transportation', 'transit', true, 1),
+      ('Snack', 'shopping_bag', true, 2),
+      ('other', 'grid_view', true, 3),
+      ('Salary', 'payments', false, 0),
+      ('other', 'grid_view', false, 1),
     ];
     await batch((b) {
       b.insertAll(categories, [
@@ -96,6 +97,7 @@ class AppDatabase extends _$AppDatabase {
             label: d.$1,
             iconKey: Value(d.$2),
             isExpense: d.$3,
+            colorIndex: Value(d.$4), // ← 加
           ),
       ]);
     });
@@ -111,7 +113,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -150,6 +152,19 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 6) {                     // ← 加
         await m.createTable(footnotes);
+      }
+      if (from < 7) { // ← 加
+        await m.addColumn(categories, categories.colorIndex);
+        for (final isExpense in [true, false]) {
+          final rows = await (select(categories)
+            ..where((c) => c.isExpense.equals(isExpense))
+            ..orderBy([(c) => OrderingTerm.asc(c.id)]))
+              .get();
+          for (var i = 0; i < rows.length; i++) {
+            await (update(categories)..where((c) => c.id.equals(rows[i].id)))
+                .write(CategoriesCompanion(colorIndex: Value(i)));
+          }
+        }
       }
     },
   );

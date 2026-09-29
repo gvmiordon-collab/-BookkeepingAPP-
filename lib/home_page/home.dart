@@ -125,7 +125,7 @@ class _HomePageState extends State<HomePage> {
                         onTap: () {
                           switch (index) {
                             case 0: // P&L
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => ProfitAndLossStatement()));
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => AssetCardPages()));
                               break;
                             case 1: // Asset Cards
                               Navigator.push(context, MaterialPageRoute(builder: (context) => AssetCardPages()));
