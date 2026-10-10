@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:bookkeeping/providers/category_provider.dart';
 import 'package:bookkeeping/widgets/selectable_category_icon.dart';
+import 'package:bookkeeping/widgets/category_group_selector.dart'; // ← 加
 import 'package:provider/provider.dart';
 import 'package:bookkeeping/utils/category_icon.dart';
+import 'package:bookkeeping/utils/category_group.dart'; // ← 加
 
 class CustomCategories extends StatefulWidget {
   final bool isExpense;
@@ -15,8 +17,11 @@ class CustomCategories extends StatefulWidget {
 
 class _CustomCategoriesState extends State<CustomCategories> {
 
-  // State 入面加：
-  int? _selectedIconIndex; // 用 index 唔用 codePoint，因為 list 而家有重複 icon，唔會出現一齊被揀中
+  // ⚠️ 改:預設揀第一個 icon(跟樣辦,名稱欄一開始就有 icon),原本係 null
+  int? _selectedIconIndex = 0; // 用 index 唔用 codePoint，因為 list 而家有重複 icon，唔會出現一齊被揀中
+
+  // ← 加:揀咗邊個 group(決定顏色)。預設第一個(Food & drink / Salary)
+  late String _groupKey = groupsFor(widget.isExpense).first.key;
 
   bool _saving = false;
 
@@ -28,7 +33,8 @@ class _CustomCategoriesState extends State<CustomCategories> {
     try {
       await context.read<CategoryProvider>().addCategory(
         label: name,
-        iconKey: categoryItems[_selectedIconIndex!],   // ← 原本 categoryItems[...].codePoint
+        iconKey: categoryItems[_selectedIconIndex!],
+        groupKey: _groupKey, // ← 加
         isExpense: widget.isExpense,
       );
     } finally {
@@ -43,8 +49,8 @@ class _CustomCategoriesState extends State<CustomCategories> {
 
   @override
   void dispose() {
-   _newCategoryName.dispose();
-   super.dispose();
+    _newCategoryName.dispose();
+    super.dispose();
   }
 
   final List<String> categoryItems = [
@@ -55,14 +61,17 @@ class _CustomCategoriesState extends State<CustomCategories> {
 
   @override
   Widget build(BuildContext context) {
+    final groupColor = categoryColorForGroup(_groupKey); // ← 加
     return Scaffold(
       appBar: AppBar(
         elevation: 3,
         title: Text('Add a new category'),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      // ⚠️ 改:Padding → SingleChildScrollView(加咗 group 區之後,矮啲嘅螢幕會 overflow),
+      // 底部留 90 俾浮動嘅 Confirm 掣,唔會遮住個 icon grid
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
         child: Column(
           children: [
             Container(
@@ -77,11 +86,15 @@ class _CustomCategoriesState extends State<CustomCategories> {
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: Row(
                   children: [
-                    Icon(
-                        Icons.add,
+                    // ← 改:原本 Icon(Icons.add)。而家顯示當前揀咗嘅 icon + group 顏色圓形墊
+                    SelectableCategoryIcon(
+                      icon: categoryIconData(categoryItems[_selectedIconIndex ?? 0]),
+                      size: 28,
+                      selected: true,
+                      highlightColor: groupColor,
                     ),
                     SizedBox(
-                      width: 5,
+                      width: 12,
                     ),
                     Expanded(
                       child: TextField(
@@ -94,6 +107,15 @@ class _CustomCategoriesState extends State<CustomCategories> {
                   ],
                 ),
               ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            // ← 加:分類(group)揀掣區
+            CategoryGroupSelector(
+              groups: groupsFor(widget.isExpense),
+              selectedKey: _groupKey,
+              onChanged: (k) => setState(() => _groupKey = k),
             ),
             SizedBox(
               height: 10,
@@ -140,6 +162,7 @@ class _CustomCategoriesState extends State<CustomCategories> {
                             icon: categoryIconData(categoryItems[index]),
                             size: 32,
                             selected: index == _selectedIconIndex,
+                            highlightColor: groupColor, // ← 加:圓形墊跟 group 顏色
                           ),
                         ),
                       ),

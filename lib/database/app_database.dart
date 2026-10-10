@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 // ⚠️ 淨係 migration 4 用嚟將舊 codePoint 轉成 key(所以 DB 檔仲係依賴 Flutter)
 import 'package:bookkeeping/utils/category_icon.dart';
+import 'package:bookkeeping/utils/category_group.dart';
 
 part 'app_database.g.dart';
 
@@ -18,6 +19,8 @@ class Categories extends Table {
   // 同時 key 對唔到 map 嗰陣都會 fallback 去呢個。
   TextColumn get iconKey =>
       text().withDefault(const Constant(kDefaultCategoryIconKey))();
+  TextColumn get groupKey =>
+      text().withDefault(const Constant(kDefaultGroupKey))();
   IntColumn get colorIndex => integer().withDefault(const Constant(0))(); // ← 加
   BoolColumn get isExpense => boolean()();     // 呢個 category 用喺邊邊(expense/income)
   // 刪除分類但仍有交易用緊時,唔真刪,淨係封存
@@ -81,18 +84,26 @@ class Footnotes extends Table {
 class AppDatabase extends _$AppDatabase {
 
   Future<void> _seedDefaultCategories() async {
-    // (label, iconKey, isExpense, colorIndex)
-    final defaults = <(String, String, bool, int)>[
-      ('Food', 'restaurant', true, 0),
-      ('Transportation', 'transit', true, 1),
-      ('Snack', 'shopping_bag', true, 2),
-      ('other', 'grid_view', true, 3),
-      ('Salary', 'payments', false, 0),
-      ('other', 'grid_view', false, 1),
+    final defaults = <(String, String, bool, String)>[ // (label, iconKey, isExpense, groupKey)
+      ('Food', 'restaurant', true, 'food_drink'),
+      ('Transportation', 'transit', true, 'transportation'),
+      ('Snack', 'shopping_bag', true, 'food_drink'),
+      ('other', 'grid_view', true, 'other'),
+      ('Salary', 'payments', false, 'salary'),
+      ('other', 'grid_view', false, 'other'),
     ];
     await batch((b) {
       b.insertAll(categories, [
         for (final d in defaults)
+          CategoriesCompanion.insert(
+            label: d.$1,
+            iconKey: Value(d.$2),
+            isExpense: d.$3,
+            groupKey: Value(d.$4),
+          ),
+      ]);
+    });
+    for (final d in defaults)
           CategoriesCompanion.insert(
             label: d.$1,
             iconKey: Value(d.$2),
@@ -165,6 +176,16 @@ class AppDatabase extends _$AppDatabase {
                 .write(CategoriesCompanion(colorIndex: Value(i)));
           }
         }
+      }
+      if (from < 8) {
+          await m.addColumn(categories, categories.groupKey);
+          Future<void> setGroup(List<String> labels, bool isExpense, String key) =>
+          (update(categories)
+          ..where((c) => c.label.isIn(labels) & c.isExpense.equals(isExpense)))
+              .write(CategoriesCompanion(groupKey: Value(key)));
+      await setGroup(['Food', 'Snack'], true, 'food_drink');
+      await setGroup(['Transportation'], true, 'transportation');
+      await setGroup(['Salary'], false, 'salary');
       }
     },
   );

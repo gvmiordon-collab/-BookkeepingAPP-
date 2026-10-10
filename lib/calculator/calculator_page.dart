@@ -14,6 +14,7 @@ import 'package:bookkeeping/database/app_database.dart' show TransactionEntry;
 import 'package:bookkeeping/providers/asset_provider.dart';
 import 'package:bookkeeping/calculator/calculator_logic.dart';   // ← 加
 import 'package:bookkeeping/providers/footnote_provider.dart';   // ← 加
+import 'package:bookkeeping/utils/category_group.dart';
 
 class CalculatorPage extends StatefulWidget {
   final TransactionEntry? editing; // null = 新增;有值 = 編輯嗰筆
@@ -174,6 +175,9 @@ class _CalculatorPageState extends State<CalculatorPage> {
                           icon: icon,
                           size: 30,
                           selected: cat != null && cat.id == _selectedCategoryId,
+                          highlightColor: cat == null
+                              ? const Color(0xFFFBC02D)
+                              : categoryColorForGroup(cat.groupKey), // ← 加
                         ),
                       ),
                       const SizedBox(height: 5),
