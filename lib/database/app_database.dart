@@ -103,15 +103,6 @@ class AppDatabase extends _$AppDatabase {
           ),
       ]);
     });
-    for (final d in defaults)
-          CategoriesCompanion.insert(
-            label: d.$1,
-            iconKey: Value(d.$2),
-            isExpense: d.$3,
-            colorIndex: Value(d.$4), // ← 加
-          ),
-      ]);
-    });
   }
 
   /// 返回 Cash 嘅 id(migration 要用嚟歸戶舊交易)
@@ -124,7 +115,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(

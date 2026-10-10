@@ -1,0 +1,37 @@
+diff --git a/lib/database/app_database.dart b/lib/database/app_database.dart
+index f043756..471f060 100644
+--- a/lib/database/app_database.dart
++++ b/lib/database/app_database.dart
+@@ -103,15 +103,6 @@ class AppDatabase extends _$AppDatabase {
+           ),
+       ]);
+     });
+-    for (final d in defaults)
+-          CategoriesCompanion.insert(
+-            label: d.$1,
+-            iconKey: Value(d.$2),
+-            isExpense: d.$3,
+-            colorIndex: Value(d.$4), // ← 加
+-          ),
+-      ]);
+-    });
+   }
+ 
+   /// 返回 Cash 嘅 id(migration 要用嚟歸戶舊交易)
+@@ -124,7 +115,7 @@ class AppDatabase extends _$AppDatabase {
+   AppDatabase() : super(_openConnection());
+ 
+   @override
+-  int get schemaVersion => 7;
++  int get schemaVersion => 8;
+ 
+   @override
+   MigrationStrategy get migration => MigrationStrategy(
+diff --git a/lib/home_page/drawer_pages/P&L_in_page/pnl_colors.dart b/lib/home_page/drawer_pages/P&L_in_page/DetailListItem/pnl_colors.dart
+similarity index 100%
+rename from lib/home_page/drawer_pages/P&L_in_page/pnl_colors.dart
+rename to lib/home_page/drawer_pages/P&L_in_page/DetailListItem/pnl_colors.dart
+diff --git a/lib/home_page/drawer_pages/P&L_in_page/pnl_shared_widgets.dart b/lib/home_page/drawer_pages/P&L_in_page/DetailListItem/pnl_shared_widgets.dart
+similarity index 100%
+rename from lib/home_page/drawer_pages/P&L_in_page/pnl_shared_widgets.dart
+rename to lib/home_page/drawer_pages/P&L_in_page/DetailListItem/pnl_shared_widgets.dart
