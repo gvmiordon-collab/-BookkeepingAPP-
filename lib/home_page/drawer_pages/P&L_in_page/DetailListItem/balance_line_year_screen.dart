@@ -1,24 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'pnl_colors.dart';
+import 'pnl_logic.dart';
 import 'pnl_shared_widgets.dart';
+import 'pnl_widgets.dart';
 
+/// 逐月版:範圍(MTH / Last 6 / Year)入面每個月一個點
 class BalanceLineYearScreen extends StatelessWidget {
   final VoidCallback? onToggle;
-  final int timeFilterIndex; // ← 加
-  final ValueChanged<int> onTimeFilterChanged; // ← 加
-  final String dateText; // ← 加
-  final VoidCallback onPrevious; // ← 加
-  final VoidCallback onNext; // ← 加
+  final PnlReport report; // ← 加:數據
+  final int timeFilterIndex;
+  final ValueChanged<int> onTimeFilterChanged;
+  final String dateText;
+  final VoidCallback onPrevious;
+  final VoidCallback onNext;
 
   const BalanceLineYearScreen({
     super.key,
     this.onToggle,
+    required this.report, // ← 加
     required this.timeFilterIndex,
     required this.onTimeFilterChanged,
-    required this.dateText, // ← 加
-    required this.onPrevious, // ← 加
-    required this.onNext, // ← 加
+    required this.dateText,
+    required this.onPrevious,
+    required this.onNext,
   });
 
   @override
@@ -31,105 +35,29 @@ class BalanceLineYearScreen extends StatelessWidget {
           selectedColor: kPink,
         ),
         DateCurrencySelector(
-          dateText: dateText, // ← 改:原本寫死 '2026'
-          onPrevious: onPrevious, // ← 改:原本空 () {}
-          onNext: onNext, // ← 改
+          dateText: dateText,
+          onPrevious: onPrevious,
+          onNext: onNext,
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  RichText(text: const TextSpan(style: TextStyle(color: Colors.black, fontSize: 16), children: [
-                    TextSpan(text: 'Expense '),
-                    TextSpan(text: '-9,540.8', style: TextStyle(color: kYellow, fontWeight: FontWeight.bold)),
-                  ])),
-                  RichText(text: const TextSpan(style: TextStyle(color: Colors.black, fontSize: 16), children: [
-                    TextSpan(text: 'Income '),
-                    TextSpan(text: '7,792', style: TextStyle(color: kBlue, fontWeight: FontWeight.bold)),
-                  ])),
-                ],
-              ),
-              Row(
-                children: [
-                  RichText(text: const TextSpan(style: TextStyle(color: Colors.black, fontSize: 16), children: [
-                    TextSpan(text: 'Balance '),
-                    TextSpan(text: '-1,748.8', style: TextStyle(color: kPink, fontWeight: FontWeight.bold)),
-                  ])),
-                  if (onToggle != null)
-                    IconButton(
-                      icon: const Icon(Icons.show_chart),
-                      onPressed: onToggle,
-                    ),
-                ],
-              ),
-            ],
-          ),
+        PnlBalanceSummary( // ← 改:原本寫死 -9,540.8 / 7,792 / -1,748.8
+          report: report,
+          onToggle: onToggle,
+          toggleIcon: Icons.show_chart,
         ),
         const SizedBox(height: 20),
         SizedBox(
           height: 200,
           child: Padding(
             padding: const EdgeInsets.only(right: 20),
-            child: LineChart(
-              LineChartData(
-                gridData: const FlGridData(show: false),
-                titlesData: FlTitlesData(
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 50)),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        const texts = ['Mar', 'Jun', 'Sep']; // 舊→新
-                        if (value.toInt() >= 0 && value.toInt() < texts.length) {
-                          return Text(texts[value.toInt()], style: const TextStyle(fontSize: 10));
-                        }
-                        return const Text('');
-                      },
-                    ),
-                  ),
-                ),
-                borderData: FlBorderData(show: true, border: const Border(left: BorderSide(), bottom: BorderSide())),
-                lineBarsData: [
-                  LineChartBarData(spots: const [FlSpot(0, -100), FlSpot(1, -100), FlSpot(2, 900)], isCurved: false, color: kPink, dotData: const FlDotData(show: true)),
-                  LineChartBarData(spots: const [FlSpot(0, 500), FlSpot(1, 500), FlSpot(2, 900)], isCurved: false, color: kBlue, dotData: const FlDotData(show: true)),
-                  LineChartBarData(spots: const [FlSpot(0, 1000), FlSpot(1, 1000), FlSpot(2, 300)], isCurved: false, color: kYellow, dotData: const FlDotData(show: true)),
-                ],
-              ),
-            ),
+            child: PnlLineView(series: report.monthly, leftReservedSize: 50), // ← 改:原本寫死 spots
           ),
         ),
         const SizedBox(height: 20),
         Expanded(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.black54, width: 2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Date', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      Icon(Icons.sort, size: 20),
-                    ],
-                  ),
-                ),
-                const DetailListItem(icon: Icons.calendar_today, iconBgColor: Colors.transparent, title: 'Sep', amount: '\$689.6'),
-                const DetailListItem(icon: Icons.calendar_today, iconBgColor: Colors.transparent, title: 'Aug', amount: '\$-1,097.4'),
-                const DetailListItem(icon: Icons.calendar_today, iconBgColor: Colors.transparent, title: 'Jul', amount: '\$-1,171.8'),
-                const DetailListItem(icon: Icons.calendar_today, iconBgColor: Colors.transparent, title: 'Jun', amount: '\$-464'),
-              ],
-            ),
+          child: PnlDetailsBox( // ← 改:原本寫死四行 Column
+            title: 'Date',
+            scrollable: true,
+            rows: pnlDateRows(report.monthly),
           ),
         ),
         const SizedBox(height: 20),

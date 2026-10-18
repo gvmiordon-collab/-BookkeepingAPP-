@@ -1,24 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'pnl_colors.dart';
+import 'pnl_logic.dart';
 import 'pnl_shared_widgets.dart';
+import 'pnl_widgets.dart';
 
 class ExpenseBarScreen extends StatelessWidget {
   final VoidCallback? onToggle;
-  final int timeFilterIndex; // ← 加
-  final ValueChanged<int> onTimeFilterChanged; // ← 加
-  final String dateText; // ← 加
-  final VoidCallback onPrevious; // ← 加
-  final VoidCallback onNext; // ← 加
+  final PnlReport report; // ← 加:數據
+  final int timeFilterIndex;
+  final ValueChanged<int> onTimeFilterChanged;
+  final String dateText;
+  final VoidCallback onPrevious;
+  final VoidCallback onNext;
 
   const ExpenseBarScreen({
     super.key,
     this.onToggle,
+    required this.report, // ← 加
     required this.timeFilterIndex,
     required this.onTimeFilterChanged,
-    required this.dateText, // ← 加
-    required this.onPrevious, // ← 加
-    required this.onNext, // ← 加
+    required this.dateText,
+    required this.onPrevious,
+    required this.onNext,
   });
 
   @override
@@ -31,9 +34,9 @@ class ExpenseBarScreen extends StatelessWidget {
           selectedColor: kYellow,
         ),
         DateCurrencySelector(
-          dateText: dateText, // ← 改:原本寫死 '2026'
-          onPrevious: onPrevious, // ← 改:原本空 () {}
-          onNext: onNext, // ← 改
+          dateText: dateText,
+          onPrevious: onPrevious,
+          onNext: onNext,
         ),
         Align(
           alignment: Alignment.centerRight,
@@ -51,66 +54,15 @@ class ExpenseBarScreen extends StatelessWidget {
           height: 220,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: BarChart(
-              BarChartData(
-                alignment: BarChartAlignment.spaceAround,
-                maxY: 100,
-                gridData: FlGridData(show: true, drawVerticalLine: false, horizontalInterval: 20),
-                titlesData: FlTitlesData(
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 40, interval: 20)),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        const texts = ['Shopping', 'Food & drink', 'Transportation'];
-                        if (value.toInt() >= 0 && value.toInt() < texts.length) {
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(texts[value.toInt()], style: const TextStyle(fontSize: 10)),
-                          );
-                        }
-                        return const Text('');
-                      },
-                    ),
-                  ),
-                ),
-                borderData: FlBorderData(show: true, border: const Border(left: BorderSide(), bottom: BorderSide())),
-                barGroups: [
-                  BarChartGroupData(x: 0, barRods: [BarChartRodData(toY: 0, color: kYellow, width: 30)]),
-                  BarChartGroupData(x: 1, barRods: [BarChartRodData(toY: 80.3, color: kPink, width: 30)]),
-                  BarChartGroupData(x: 2, barRods: [BarChartRodData(toY: 19.7, color: kBlue, width: 30)]),
-                ],
-              ),
-            ),
+            child: PnlBarView(groups: report.expenseGroups), // ← 改:原本成個 BarChart 寫死
           ),
         ),
         const SizedBox(height: 20),
         Expanded(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.black54, width: 2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      Icon(Icons.sort, size: 20),
-                    ],
-                  ),
-                ),
-                const DetailListItem(icon: Icons.circle, iconBgColor: kPink, title: 'Food & drink', amount: '\$7,665.6'),
-                const DetailListItem(icon: Icons.circle, iconBgColor: kBlue, title: 'Transportation', amount: '\$1,875.2'),
-                const DetailListItem(icon: Icons.circle, iconBgColor: kYellow, title: 'Shopping', amount: '\$0'),
-              ],
-            ),
+          child: PnlDetailsBox( // ← 改:原本寫死三行 Column;scrollable 因為行數而家唔固定
+            title: 'Details',
+            scrollable: true,
+            rows: pnlCategoryRows(report.expenseCategories),
           ),
         ),
         const SizedBox(height: 20),

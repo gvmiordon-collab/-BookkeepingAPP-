@@ -1,24 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'pnl_colors.dart';
+import 'pnl_logic.dart';
 import 'pnl_shared_widgets.dart';
+import 'pnl_widgets.dart';
 
 class ExpensePieScreen extends StatelessWidget {
   final VoidCallback? onToggle;
-  final int timeFilterIndex; // ← 加
-  final ValueChanged<int> onTimeFilterChanged; // ← 加
-  final String dateText; // ← 加
-  final VoidCallback onPrevious; // ← 加
-  final VoidCallback onNext; // ← 加
+  final PnlReport report; // ← 加:數據
+  final int timeFilterIndex;
+  final ValueChanged<int> onTimeFilterChanged;
+  final String dateText;
+  final VoidCallback onPrevious;
+  final VoidCallback onNext;
 
   const ExpensePieScreen({
     super.key,
     this.onToggle,
+    required this.report, // ← 加
     required this.timeFilterIndex,
     required this.onTimeFilterChanged,
-    required this.dateText, // ← 加
-    required this.onPrevious, // ← 加
-    required this.onNext, // ← 加
+    required this.dateText,
+    required this.onPrevious,
+    required this.onNext,
   });
 
   @override
@@ -31,9 +34,9 @@ class ExpensePieScreen extends StatelessWidget {
           selectedColor: kYellow,
         ),
         DateCurrencySelector(
-          dateText: dateText, // ← 改:原本寫死 '2026'
-          onPrevious: onPrevious, // ← 改:原本空 () {}
-          onNext: onNext, // ← 改
+          dateText: dateText,
+          onPrevious: onPrevious,
+          onNext: onNext,
         ),
         Expanded(
           child: SingleChildScrollView(
@@ -43,31 +46,10 @@ class ExpensePieScreen extends StatelessWidget {
                 Stack(
                   alignment: Alignment.topRight,
                   children: [
-                    SizedBox(
-                      height: 220,
-                      child: Stack(
-                        children: [
-                          PieChart(
-                            PieChartData(
-                              sectionsSpace: 2,
-                              centerSpaceRadius: 60,
-                              sections: [
-                                PieChartSectionData(color: kPink, value: 80.3, showTitle: false, radius: 40, borderSide: const BorderSide(color: Colors.black, width: 2)),
-                                PieChartSectionData(color: kYellow, value: 19.7, showTitle: false, radius: 40, borderSide: const BorderSide(color: Colors.black, width: 2)),
-                              ],
-                            ),
-                          ),
-                          const Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text('Total expense', style: TextStyle(fontSize: 14, color: Colors.black87)),
-                                Text('\$9,540.8', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                    PnlPieView( // ← 改:原本寫死 80.3 / 19.7 同 '$9,540.8'
+                      groups: report.expenseGroups,
+                      centerLabel: 'Total expense',
+                      total: report.totalExpense,
                     ),
                     if (onToggle != null)
                       IconButton(
@@ -77,71 +59,17 @@ class ExpensePieScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 20),
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black54, width: 2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          _buildLegend(kPink, '膳食  80.3%'),
-                          const SizedBox(width: 20),
-                          _buildLegend(kYellow, 'Trasp...  19.7%'),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          _buildLegend(kOrange, 'Snacks  0%'),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                PnlLegendBox(groups: report.expenseGroups), // ← 改:原本寫死 膳食 / Trasp... / Snacks
                 const SizedBox(height: 16),
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black54, width: 2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.all(12),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                            Icon(Icons.sort, size: 20),
-                          ],
-                        ),
-                      ),
-                      const DetailListItem(icon: Icons.restaurant, iconBgColor: kPink, title: '膳食', amount: '\$7,665.6'),
-                      const DetailListItem(icon: Icons.directions_bus, iconBgColor: kYellow, title: 'Trasportations', amount: '\$1,875.2'),
-                      const DetailListItem(icon: Icons.shopping_bag_outlined, iconBgColor: kOrange, title: 'Snacks', amount: '\$0'),
-                    ],
-                  ),
+                PnlDetailsBox( // ← 改:原本寫死三行
+                  title: 'Details',
+                  rows: pnlCategoryRows(report.expenseCategories),
                 ),
                 const SizedBox(height: 20),
               ],
             ),
           ),
         ),
-      ],
-    );
-  }
-
-  Widget _buildLegend(Color color, String text) {
-    return Row(
-      children: [
-        Container(width: 14, height: 14, color: color),
-        const SizedBox(width: 6),
-        Text(text, style: const TextStyle(fontWeight: FontWeight.w500)),
       ],
     );
   }
