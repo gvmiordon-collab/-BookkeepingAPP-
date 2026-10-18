@@ -28,6 +28,8 @@ class _FixedItemPagesState extends State<FixedItemPages> {
         centerTitle: true,
       ),
       body: ListView.builder(
+        // ← 加:底部留位,最後一項唔會俾浮動嘅 + 掣遮住
+        padding: EdgeInsets.only(bottom: 100 + MediaQuery.viewPaddingOf(context).bottom),
         itemCount: items.length, // ← 改
         itemBuilder: (BuildContext context, int index) {
           final item = items[index]; // ← 加

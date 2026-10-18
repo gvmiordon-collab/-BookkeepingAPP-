@@ -44,12 +44,20 @@ class TransactionsTable extends StatelessWidget {
                     fmtDateHome(date),
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  Text(
-                    '\$ ${fmtAmount(total, grouped: true)}',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: total >= 0 ? Colors.lightBlue : Colors.orange, // 正數藍、負數橙(跟你原本註解)
-                      fontWeight: FontWeight.bold,
+                  // ← 加 Flexible + FittedBox:窄機 / 金額好大嗰陣,當日合計會自動縮細,唔會同日期撞爆
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        '\$ ${fmtAmount(total, grouped: true)}',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: total >= 0 ? Colors.lightBlue : Colors.orange, // 正數藍、負數橙(跟你原本註解)
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                 ],

@@ -66,7 +66,15 @@ class FixedItemsModel extends StatelessWidget { // ← 改:StatefulWidget → St
                       children: [
                         Row(
                           children: [
-                            Text(fixedItemsName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            // ← 改:名加咗 Flexible,名太長就 ...,金額永遠睇得晒(原本會爆出螢幕)
+                            Flexible(
+                              child: Text(
+                                fixedItemsName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                            ),
                             const SizedBox(width: 5),
                             Text(
                               '${isExpense ? '-' : ''}\$ $amountText', // ← 改:原本寫死 '$ 14.8'

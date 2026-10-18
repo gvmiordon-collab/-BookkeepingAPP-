@@ -60,21 +60,25 @@ class _ChooseCategoryState extends State<ChooseCategory> {
                         border: Border.all(color: Colors.black, width: 2.0),
                         borderRadius: BorderRadius.circular(10),
                       ),
+                      // ← 改:同 Categories 頁一樣,固定 padding 15 改細 + 內容置中,窄機唔會 overflow
                       child: Padding(
-                        padding: const EdgeInsets.all(15.0),
-                        child: Column(
-                          children: [
-                            Icon(categoryIconData(item.iconKey)),
-                            const SizedBox(height: 5),
-                            Text(
-                              item.label,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              softWrap: false,
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                          ],
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(categoryIconData(item.iconKey)),
+                              const SizedBox(height: 5),
+                              Text(
+                                item.label,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                softWrap: false,
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

@@ -65,7 +65,13 @@ class _CategoriesPagesState extends State<CategoriesPages> {
             ),
             Expanded(
               child: GridView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                // ← 改:編輯模式下底部有浮動 Add 掣,留位俾最後一行格仔,唔會被遮住
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  10,
+                  20,
+                  _editMode ? 80 + MediaQuery.viewPaddingOf(context).bottom : 10,
+                ),
                 itemCount: items.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 4,
@@ -80,21 +86,27 @@ class _CategoriesPagesState extends State<CategoriesPages> {
                       border: Border.all(color: Colors.black, width: 2.0),
                       borderRadius: BorderRadiusGeometry.circular(10),
                     ),
+                    // ← 改:格仔大小係跟螢幕闊度(4 欄 × 0.9 比例)變,原本固定 padding 15 嘅話,
+                    // 窄機 / 系統字體放大嗰陣 icon + 字會 Column overflow。
+                    // 而家 padding 縮細,內容喺格入面置中,夠位嗰陣睇落同原本差唔多。
                     child: Padding(
-                      padding: const EdgeInsets.all(15.0),
-                      child: Column(
-                        children: [
-                          Icon(categoryIconData(item.iconKey)),
-                          const SizedBox(height: 5),
-                          Text(
-                            item.label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            softWrap: false,
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                        ],
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(categoryIconData(item.iconKey)),
+                            const SizedBox(height: 5),
+                            Text(
+                              item.label,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              softWrap: false,
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );

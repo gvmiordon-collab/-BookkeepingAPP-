@@ -33,33 +33,46 @@ class _AssetsCardState extends State<AssetsCard> {
             color: Colors.purple[600],
             borderRadius: BorderRadiusGeometry.circular(30),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  widget.assetNamed,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                  ),
+          // ← 加 LayoutBuilder:卡係固定 2:1,卡矮咗(窄機 / 系統字體放大)就將兩行字按比例縮細,
+          // 唔會 Column overflow。卡夠高(縮放比例 = 1)嗰陣同原本一模一樣。
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // 26 + 60 兩行字(連 Material 預設行高 1.43)大約要 123 高,126 留少少餘地;40 = 上下 padding
+              final textScale = MediaQuery.textScalerOf(context).scale(1.0);
+              final s = ((constraints.maxHeight - 40) / (126 * textScale))
+                  .clamp(0.4, 1.0)
+                  .toDouble();
+              return Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      widget.assetNamed,
+                      maxLines: 1,                      // ← 加:名太長就 ... 唔好換行撐高
+                      overflow: TextOverflow.ellipsis,  // ← 加
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 26 * s,               // ← 改:原本 26
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    AutoSizeText(
+                      '\$ ${widget.assetAmount}',
+                      maxLines: 1,
+                      minFontSize: 20 * s,              // ← 改:原本 20
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 60 * s,               // ← 改:原本 60
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
-                AutoSizeText(
-                  '\$ ${widget.assetAmount}',
-                  maxLines: 1,
-                  minFontSize: 20,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 60,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),

@@ -135,7 +135,13 @@ class _CalculatorPageState extends State<CalculatorPage> {
           ),
         ],
       ),
-      body: Column(
+      // ← 改:body 包咗 LayoutBuilder,用嚟按螢幕高度計中間 Result 區嘅高度(見下面 resultHeight)
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+      // 原本 Result 區係 flex 2(約 2/17 螢幕高)。矮機嗰陣會縮到擠唔落 25 號字 + 輸入框 + chip,
+      // 所以改成:照舊係 2/17,但最矮 88、最高 120。正常高度嘅手機同原本一樣。
+      final resultHeight = (constraints.maxHeight * 2 / 17).clamp(88.0, 120.0).toDouble();
+      return Column(
         children: [
           Expanded(
             flex: 6,
@@ -198,8 +204,9 @@ class _CalculatorPageState extends State<CalculatorPage> {
               },
             ),
           ),
-          Expanded(
-            flex: 2,
+          SizedBox(
+            height: resultHeight, // ← 改:原本 Expanded(flex: 2)
+            width: double.infinity,
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -224,10 +231,21 @@ class _CalculatorPageState extends State<CalculatorPage> {
                   onChanged: (d) => setState(() => _selectedDate = d),
                 ),
                 Expanded( // 建議：用 Expanded 包住 GridView 以防溢出
-                  child: GridView.builder(
+                  // ← 改:原本格仔係「螢幕闊 ÷ 5」嘅正方形,同可用高度冇關係,
+                  // 矮機 / 長闊比唔同嘅手機,最底一行(OK 掣)會唔夠位、要拉先見到。
+                  // 而家 5 欄 × 4 行,每格闊 = 可用闊 ÷ 5、高 = 可用高 ÷ 4,一定剛好填滿、唔使捲動。
+                  child: LayoutBuilder(
+                    builder: (context, gridConstraints) {
+                      final cellW = gridConstraints.maxWidth / 5;
+                      final cellH = gridConstraints.maxHeight / 4;
+                      final ratio = cellW / (cellH <= 0 ? 1 : cellH);
+                      return GridView.builder(
+                      physics: const NeverScrollableScrollPhysics(), // ← 加:唔使捲動
                       itemCount: button.length, // 修正：設定 item 總數
-                      shrinkWrap: true,
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 5),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 5,
+                        childAspectRatio: ratio, // ← 改:原本預設 1.0(正方形)
+                      ),
                       itemBuilder: (BuildContext context, int index) {
 
                         if(index ==4) { // Clean button (AC)
@@ -287,13 +305,17 @@ class _CalculatorPageState extends State<CalculatorPage> {
                           );
                         }
                       }
+                      );
+                    },
                   ),
                 ),
               ],
             ),
           ),
         ],
-      ) ,
+      );
+        },
+      ),
     );
   }
 

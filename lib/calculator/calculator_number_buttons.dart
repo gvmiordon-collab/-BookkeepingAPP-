@@ -34,12 +34,17 @@ class CalculatorNumbersButtons extends StatelessWidget {
           ),
 
           child: Center(
-            child: Text(
-              buttonText,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
+            // ← 加 FittedBox:掣因為矮機 / 系統字體放大變細嗰陣,28 號字會自動縮到擺得落,
+            // 掣夠大嗰陣(縮放 = 1)同原本一樣
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                buttonText,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),

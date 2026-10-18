@@ -169,6 +169,7 @@ class _CreateANewFixedItemState extends State<CreateANewFixedItem> {
     return Scaffold(
       appBar: AppBar(),
       body: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: 90), // ← 加:最底一行唔會俾浮動 Confirm 掣遮住
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -219,22 +220,34 @@ class _CreateANewFixedItemState extends State<CreateANewFixedItem> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Text('Categories', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: _openChooseCategory,
-                        child: Consumer<CategoryProvider>(
-                          builder: (context, categoryProvider, _) {
-                            final cat = _selectedCategoryId == null ? null : categoryProvider.categoryById(_selectedCategoryId!);
-                            return Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(cat?.label ?? (_isExpenseSelected ? 'Expense' : 'Income'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                const SizedBox(width: 5),
-                                Icon(cat == null ? Icons.emoji_transportation : categoryIconData(cat.iconKey), size: 28),
-                                const Icon(Icons.keyboard_arrow_right),
-                              ],
-                            );
-                          },
+                      // ← 改:原本 Spacer() + 唔會縮嘅 GestureDetector。分類名長嘅話會橫向爆出螢幕,
+                      // 而家右邊成組用 Expanded 包住,名太長就 ...(仍然靠右對齊)
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: _openChooseCategory,
+                          child: Consumer<CategoryProvider>(
+                            builder: (context, categoryProvider, _) {
+                              final cat = _selectedCategoryId == null ? null : categoryProvider.categoryById(_selectedCategoryId!);
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      cat?.label ?? (_isExpenseSelected ? 'Expense' : 'Income'),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Icon(cat == null ? Icons.emoji_transportation : categoryIconData(cat.iconKey), size: 28),
+                                  const Icon(Icons.keyboard_arrow_right),
+                                ],
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ],
@@ -253,21 +266,32 @@ class _CreateANewFixedItemState extends State<CreateANewFixedItem> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Text('Account', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: _openAssetPicker,
-                        child: Consumer<AssetProvider>(
-                          builder: (context, assetProvider, _) {
-                            final asset = _selectedAssetId == null ? null : assetProvider.assetById(_selectedAssetId!);
-                            return Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(asset?.name ?? 'Tap to set', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                const SizedBox(width: 5),
-                                const Icon(Icons.keyboard_arrow_right),
-                              ],
-                            );
-                          },
+                      // ← 改:同 Categories 一樣,戶口名長都唔會爆出螢幕
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: _openAssetPicker,
+                          child: Consumer<AssetProvider>(
+                            builder: (context, assetProvider, _) {
+                              final asset = _selectedAssetId == null ? null : assetProvider.assetById(_selectedAssetId!);
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      asset?.name ?? 'Tap to set',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  const Icon(Icons.keyboard_arrow_right),
+                                ],
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ],
@@ -286,16 +310,28 @@ class _CreateANewFixedItemState extends State<CreateANewFixedItem> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Text('Schedule time', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: _openScheduleSheet,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(_scheduleLabel, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                            const SizedBox(width: 5),
-                            const Icon(Icons.keyboard_arrow_right),
-                          ],
+                      // ← 改:'Weekly / Mon, Tue, Wed, Thu, Fri, Sat, Sun' 呢類長 label 以前會爆出螢幕,
+                      // 而家最多佔剩低嘅闊度,放唔落就 ...
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: _openScheduleSheet,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  _scheduleLabel,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              const SizedBox(width: 5),
+                              const Icon(Icons.keyboard_arrow_right),
+                            ],
+                          ),
                         ),
                       ),
                     ],

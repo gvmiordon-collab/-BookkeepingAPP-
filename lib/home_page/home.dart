@@ -170,18 +170,32 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           SliverToBoxAdapter(
-            child: SizedBox(
-              height: 220,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: cards.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return AssetsCard(
-                    assetNamed: cards[index].name,
-                    assetAmount: fmtAmount(cards[index].balance, grouped: true),
-                  );
-                },
-              ),
+            // ← 改:原本 SizedBox(height: 220) 逼個 2:1 嘅卡自己推出闊度(≈408),
+            // 窄過 408dp 嘅手機右邊會被切走。而家由螢幕闊度計卡闊度,再反推 list 高度。
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // 最闊 408(= 原本喺 411dp 闊嘅 emulator 見到嘅大小),窄機就貼住螢幕闊
+                final cardWidth =
+                constraints.maxWidth < 408 ? constraints.maxWidth : 408.0;
+                // AssetsCard 內部:上下左右各 16 padding + 2:1 嘅卡身
+                final listHeight = (cardWidth - 32) / 2 + 32;
+                return SizedBox(
+                  height: listHeight,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: cards.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return SizedBox(
+                        width: cardWidth,
+                        child: AssetsCard(
+                          assetNamed: cards[index].name,
+                          assetAmount: fmtAmount(cards[index].balance, grouped: true),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
             ),
           ),
 
@@ -192,6 +206,12 @@ class _HomePageState extends State<HomePage> {
                 return TransactionsTable(date: day, entries: grouped[day]!);
               },
               childCount: days.length,
+            ),
+          ),
+          // ← 加:底部留位,最後一筆交易唔會被浮動嘅 + 掣(同手機底部手勢條)遮住
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: 100 + MediaQuery.viewPaddingOf(context).bottom,
             ),
           ),
         ],

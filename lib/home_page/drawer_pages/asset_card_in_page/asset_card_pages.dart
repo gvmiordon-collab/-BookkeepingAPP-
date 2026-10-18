@@ -25,6 +25,8 @@ class _AssetCardPagesState extends State<AssetCardPages> {
         centerTitle: true,
       ),
       body: ListView.builder(
+        // ← 加:底部留位,最後一張卡唔會俾浮動嘅 + 掣遮住
+        padding: EdgeInsets.only(bottom: 100 + MediaQuery.viewPaddingOf(context).bottom),
         itemCount: cards.length,
         itemBuilder: (BuildContext context, int index) {
           final c = cards[index];                                         // ← 加
