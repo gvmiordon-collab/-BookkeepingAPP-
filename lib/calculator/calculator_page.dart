@@ -136,7 +136,13 @@ class _CalculatorPageState extends State<CalculatorPage> {
         ],
       ),
       // ← 改:body 包咗 LayoutBuilder,用嚟按螢幕高度計中間 Result 區嘅高度(見下面 resultHeight)
-      body: LayoutBuilder(
+      // ← 加 SafeArea(top: false):App 而家畫到手勢條底下(main.dart 嘅 edge-to-edge),
+      // 底部一行掣要避開手勢條;背景色(deepPurple[100])仍然鋪滿成個螢幕,唔會出現黑/白條
+      body: SafeArea(
+        top: false,
+        left: false,
+        right: false,
+        child: LayoutBuilder(
         builder: (context, constraints) {
       // 原本 Result 區係 flex 2(約 2/17 螢幕高)。矮機嗰陣會縮到擠唔落 25 號字 + 輸入框 + chip,
       // 所以改成:照舊係 2/17,但最矮 88、最高 120。正常高度嘅手機同原本一樣。
@@ -315,6 +321,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
         ],
       );
         },
+      ),
       ),
     );
   }

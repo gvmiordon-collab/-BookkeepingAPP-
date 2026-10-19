@@ -40,7 +40,11 @@ class _ChooseCategoryState extends State<ChooseCategory> {
             const SizedBox(height: 16),
             Expanded(
               child: GridView.builder(
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                // ← 改:底部加手勢條高度(edge-to-edge 後最後一行格仔唔會被壓住)
+                padding: EdgeInsets.only(
+                  top: 10,
+                  bottom: 10 + MediaQuery.viewPaddingOf(context).bottom,
+                ),
                 itemCount: items.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 4,
